@@ -1,0 +1,63 @@
+{
+  "named_endpoints": {
+    "/gen_tts": {
+      "parameters": [
+        {
+          "label": "Input Text",
+          "parameter_name": "text",
+          "parameter_has_default": true,
+          "parameter_default": "All of the data, pre-processing, training code, and weights are released publicly under a permissive license, enabling the community to build on our work and develop their own powerful models.",
+          "type": "string",
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox",
+          "example_input": "Hello!!"
+        },
+        {
+          "label": "Description",
+          "parameter_name": "description",
+          "parameter_has_default": true,
+          "parameter_default": "Laura's voice is monotone yet slightly fast in delivery, with a very close recording that almost has no background noise.",
+          "type": "string",
+          "python_type": {
+            "type": "str",
+            "description": ""
+          },
+          "component": "Textbox",
+          "example_input": "Hello!!"
+        },
+        {
+          "label": "Use Large checkpoint",
+          "parameter_name": "use_large",
+          "parameter_has_default": true,
+          "parameter_default": false,
+          "type": "boolean",
+          "python_type": {
+            "type": "bool",
+            "description": ""
+          },
+          "component": "Checkbox",
+          "example_input": true
+        }
+      ],
+      "returns": [
+        {
+          "label": "Parler-TTS generation",
+          "type": "",
+          "python_type": {
+            "type": "filepath",
+            "description": ""
+          },
+          "component": "Audio"
+        }
+      ],
+      "type": {
+        "generator": false,
+        "cancel": false
+      }
+    }
+  },
+  "unnamed_endpoints": {}
+}
