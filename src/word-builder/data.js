@@ -146,3 +146,8 @@ export function getDailyWord() {
  * All letters for distractor generation
  */
 export const ALL_LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+/**
+ * Consonants only (for distractor generation in spelling games)
+ */
+export const ALL_CONSONANTS = 'bcdfghjklmnpqrstvwxyz'.split('');

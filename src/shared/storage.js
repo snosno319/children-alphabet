@@ -385,11 +385,6 @@ export function completeDailyChallenge() {
     saveProgress(p);
 }
 
-export function isDailyCompleted() {
-    const p = getProgress();
-    return p.wordBuilder.lastDaily === getTodayString();
-}
-
 export function getStreak() {
     return getProgress().wordBuilder.streak;
 }

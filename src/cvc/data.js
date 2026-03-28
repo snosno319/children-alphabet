@@ -135,6 +135,21 @@ export function getAllWords() {
 }
 
 /**
+ * Get all word families
+ */
+export function getAllFamilies() {
+    return WORD_FAMILIES;
+}
+
+/**
+ * Get words for a specific family by rime
+ */
+export function getWordsForFamily(rime) {
+    const family = WORD_FAMILIES.find(f => f.rime === rime);
+    return family ? family.words : [];
+}
+
+/**
  * Get a word family by its rime
  */
 export function getFamily(rime) {
