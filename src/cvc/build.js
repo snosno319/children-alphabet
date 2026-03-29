@@ -16,15 +16,14 @@ let answered = false;
 let wrongGuesses = 0;
 const WORDS_PER_ROUND = 5;
 let localNavigate = null;
-let wordsBase = []; // Declare wordsBase globally
 
 export function renderBuild(app, navigate, props = {}) {
   localNavigate = navigate;
-  wordsBase = getAllWords().sort(() => Math.random() - 0.5); // Initialize wordsBase here
+  const allWords = getAllWords().sort(() => Math.random() - 0.5);
   roundIndex = 0;
   selectedLetters = [];
   answered = false;
-  currentRound = generateRound();
+  currentRound = generateRound(allWords);
 
   app.innerHTML = `
     <div class="screen build-screen" id="build">
@@ -55,9 +54,7 @@ export function renderBuild(app, navigate, props = {}) {
   }, 800);
 }
 
-function generateRound() {
-  // Use wordsBase if it's initialized, otherwise fall back to getAllWords()
-  const allWords = wordsBase.length > 0 ? wordsBase : getAllWords().sort(() => Math.random() - 0.5);
+function generateRound(allWords) {
   return allWords.slice(0, WORDS_PER_ROUND);
 }
 
@@ -230,7 +227,7 @@ function showBuildResults() {
     playPopSound();
     roundIndex = 0;
     selectedLetters = [];
-    currentRound = generateRound();
+    currentRound = generateRound(getAllWords().sort(() => Math.random() - 0.5));
     document.getElementById('build-score').textContent = '⭐ 0';
     speakInstruction('build_entry');
     setTimeout(() => showBuildWord(), 2500);

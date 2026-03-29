@@ -3,11 +3,12 @@
  * No more long monologues — child taps what they want to hear.
  */
 import { LETTERS } from './data.js';
-import { speakLetter, speakPhonetic, playPopSound, speakInstruction, speakFunFact, playTinkle, playAudio } from '../shared/audio.js';
+import { speakLetter, speakPhonetic, playPopSound, speakInstruction, speakFunFact, playTinkle, playAudio, slug } from '../shared/audio.js';
 import { markExplored, addAlphabetStars } from '../shared/storage.js';
-import { advanceJourney, exitJourney, getJourneyState } from '../shared/journey.js';
+import { advanceJourney, exitJourney } from '../shared/journey.js';
 
 let currentIndex = 0;
+let selectedIndex = -1;
 let exploredThisSession = new Set();
 let localNavigate = null;
 
@@ -81,7 +82,7 @@ export function renderExplore(app, navigate, props = {}) {
 
   document.getElementById('explore-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
     if (window.isJourneyMode) {
       exitJourney(navigate);
     } else {
@@ -117,8 +118,7 @@ export function renderExplore(app, navigate, props = {}) {
     const l = LETTERS[currentIndex];
     playTinkle();
     // "A is for Apple" — use pre-generated audio file
-    const wSlug = l.word.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/, '');
-    playAudio(`audio/intro/${l.letter.toLowerCase()}_is_for_${wSlug}.wav`, `${l.letter} is for ${l.word}`);
+    playAudio(`audio/intro/${l.letter.toLowerCase()}_is_for_${slug(l.word)}.wav`, `${l.letter} is for ${l.word}`);
     animatePress('detail-main-btn');
   });
 
@@ -140,8 +140,7 @@ export function renderExplore(app, navigate, props = {}) {
     const letter = LETTERS[currentIndex].letter;
     playTinkle();
     // "A is also for Airplane" — use pre-generated audio file
-    const wSlug = word.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/, '');
-    playAudio(`audio/intro/${letter.toLowerCase()}_also_${wSlug}.wav`, `${letter} is also for ${word}`);
+    playAudio(`audio/intro/${letter.toLowerCase()}_also_${slug(word)}.wav`, `${letter} is also for ${word}`);
     animatePress(btn);
   });
 
@@ -176,9 +175,8 @@ export function renderExplore(app, navigate, props = {}) {
 
   // If we are in journey mode, auto-open the detail card for the assigned letter and hide the grid
   if (window.isJourneyMode) {
-    const { letterIndex } = getJourneyState();
-    document.getElementById('explore-content').style.display = 'none'; // hide grid
-    setTimeout(() => showDetail(letterIndex), 100);
+    document.getElementById('explore-content').style.display = 'none';
+    setTimeout(() => showDetail(currentIndex), 100);
   }
 }
 

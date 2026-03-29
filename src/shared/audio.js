@@ -120,7 +120,7 @@ function speakTTS(text, options = {}) {
    ============================================ */
 
 /** Normalise text into a safe filename stem. */
-function slug(text) {
+export function slug(text) {
     return text.toLowerCase()
         .replace(/['']/g, '')
         .replace(/[^a-z0-9]+/g, '_')

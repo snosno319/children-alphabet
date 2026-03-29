@@ -21,6 +21,7 @@ let localNavigate = null; // store navigate
 
 export function renderTrace(app, navigate, props = {}) {
   localNavigate = navigate;
+  firstVisit = true;
   if (window.isJourneyMode && props.index !== undefined) {
     currentIndex = props.index;
   } else if (!window.isJourneyMode) {
@@ -81,7 +82,7 @@ export function renderTrace(app, navigate, props = {}) {
 
   document.getElementById('trace-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
     if (window.isJourneyMode) {
       exitJourney(navigate);
     } else {
