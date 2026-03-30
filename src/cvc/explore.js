@@ -3,7 +3,7 @@
  * Shows word families as bubbles. Tap a family to see all its words.
  * Tap a word to hear it blended letter by letter.
  */
-import { getAllFamilies, getWordsForFamily } from './data.js';
+import { getAllFamilies, getFamily } from './data.js';
 import { speakWord, playPopSound, speakInstruction, speak, playTinkle, speakBlendCVC } from '../shared/audio.js';
 import { markFamilyExplored, addCvcStars } from '../shared/storage.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
@@ -48,7 +48,7 @@ export function renderExplore(app, navigate, props = {}) {
 
     document.getElementById('cvc-explore-back').addEventListener('click', () => {
         playPopSound();
-        window.speechSynthesis.cancel();
+        window.speechSynthesis?.cancel();
         if (window.isJourneyMode) exitJourney(navigate);
         else navigate('cvc-home');
     });
@@ -86,8 +86,8 @@ function animatePress(el) {
 }
 
 async function showFamily(rime) {
-    window.speechSynthesis.cancel();
-    const family = WORD_FAMILIES.find(f => f.rime === rime);
+    window.speechSynthesis?.cancel();
+    const family = getFamily(rime);
     if (!family) return;
     selectedFamily = family;
 
@@ -125,7 +125,7 @@ async function showFamily(rime) {
 function hideOverlay() {
     document.getElementById('word-overlay').style.display = 'none';
     selectedFamily = null;
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
 }
 
 export function injectExploreStyles() {

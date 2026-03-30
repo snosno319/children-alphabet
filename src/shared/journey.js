@@ -9,42 +9,45 @@ import { playCelebrationSound } from './audio.js';
 
 window.isJourneyMode = false;
 
+/**
+ * Returns the index (0–25) of the letter with the lowest accuracy among those
+ * that have been attempted at least once with a wrong answer.
+ * Falls back to a random index if no letter has ever been answered incorrectly.
+ */
+function findWeakestLetter(letterScores) {
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    let weakestIdx = Math.floor(Math.random() * 26);
+    let lowestAcc = 1.0;
+
+    for (let i = 0; i < 26; i++) {
+        const s = letterScores[letters[i]];
+        if (s && s.wrong > 0) {
+            const acc = s.correct / (s.correct + s.wrong);
+            if (acc < lowestAcc) {
+                lowestAcc = acc;
+                weakestIdx = i;
+            }
+        }
+    }
+    return weakestIdx;
+}
+
 function buildDailyPath() {
     const p = getAllProgress();
     const sequence = [];
-    
-    // 1. Alphabet Mastery Check
-    // Find first letter not fully mastered (less than 80% accuracy or unexplored)
-    let focusLetterIdx = 0;
+
+    // 1. Alphabet — explore new letters first; once all 26 are done, review the weakest
     const alphabetTotal = p.alphabet.exploredLetters.length;
-    
+    let focusLetterIdx;
+
     if (alphabetTotal < 26) {
         focusLetterIdx = alphabetTotal; // Next new letter
         sequence.push({ route: 'explore', type: 'alphabet', index: focusLetterIdx });
-        sequence.push({ route: 'trace', type: 'alphabet', index: focusLetterIdx });
+        sequence.push({ route: 'trace',   type: 'alphabet', index: focusLetterIdx });
     } else {
-        // Find weakest letter
-        const scores = p.alphabet.letterScores || {};
-        let weakestIdx = Math.floor(Math.random() * 26);
-        let lowestAcc = 1.0;
-        
-        // Simple scan of first 26
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        for (let i = 0; i < 26; i++) {
-            const l = letters[i];
-            const s = scores[l];
-            if (s && s.wrong > 0) {
-                const acc = s.correct / (s.correct + s.wrong);
-                if (acc < lowestAcc) {
-                    lowestAcc = acc;
-                    weakestIdx = i;
-                }
-            }
-        }
-        focusLetterIdx = weakestIdx;
-        // Review sequence for struggling letter
+        focusLetterIdx = findWeakestLetter(p.alphabet.letterScores || {});
         sequence.push({ route: 'explore', type: 'alphabet', index: focusLetterIdx });
-        sequence.push({ route: 'quiz', type: 'alphabet', index: focusLetterIdx });
+        sequence.push({ route: 'quiz',    type: 'alphabet', index: focusLetterIdx });
     }
 
     // 2. Phonics Integration

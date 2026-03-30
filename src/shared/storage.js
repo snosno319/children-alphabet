@@ -113,12 +113,12 @@ function createDefaultProgress() {
 
 export function getTotalStars() {
     const p = getProgress();
-    return (p.alphabet?.stars || 0)
-        + (p.cvc?.stars || 0)
-        + (p.sight?.stars || 0)
-        + (p.wordBuilder?.stars || 0)
-        + (p.phonics?.stars || 0)
-        + (p.rhyme?.stars || 0);
+    return (p.alphabet.stars || 0)
+        + (p.cvc.stars || 0)
+        + (p.sight.stars || 0)
+        + (p.wordBuilder.stars || 0)
+        + (p.phonics.stars || 0)
+        + (p.rhyme.stars || 0);
 }
 
 export function getSubAppStars(subApp) {
@@ -226,7 +226,6 @@ export function recordCvcQuizAnswer(correct) {
 
 export function recordCvcAccuracy(word, isCorrect) {
     const p = getProgress();
-    if (!p.cvc.wordScores) p.cvc.wordScores = {}; // backwards compat
     if (!p.cvc.wordScores[word]) {
         p.cvc.wordScores[word] = { correct: 0, wrong: 0 };
     }
@@ -336,7 +335,6 @@ export function markWordBlended(word) {
 
 export function recordWordBuilderAccuracy(word, isCorrect) {
     const p = getProgress();
-    if (!p.wordBuilder.wordScores) p.wordBuilder.wordScores = {};
     if (!p.wordBuilder.wordScores[word]) {
         p.wordBuilder.wordScores[word] = { correct: 0, wrong: 0 };
     }
@@ -435,15 +433,13 @@ function getYesterdayString() {
 
 export function addPhonicsStars(count) {
     const p = getProgress();
-    if (!p.phonics) p.phonics = createDefaultProgress().phonics;
-    p.phonics.stars = (p.phonics.stars || 0) + count;
+    p.phonics.stars += count;
     p.global.lastActivity = Date.now();
     saveProgress(p);
 }
 
 export function recordSoundMatch(correct) {
     const p = getProgress();
-    if (!p.phonics) p.phonics = createDefaultProgress().phonics;
     p.phonics.soundMatchTotal++;
     if (correct) p.phonics.soundMatchCorrect++;
     p.global.lastActivity = Date.now();
@@ -452,7 +448,6 @@ export function recordSoundMatch(correct) {
 
 export function recordSoundSort(correct) {
     const p = getProgress();
-    if (!p.phonics) p.phonics = createDefaultProgress().phonics;
     p.phonics.soundSortTotal++;
     if (correct) p.phonics.soundSortCorrect++;
     p.global.lastActivity = Date.now();
@@ -461,7 +456,6 @@ export function recordSoundSort(correct) {
 
 export function recordEndSound(correct) {
     const p = getProgress();
-    if (!p.phonics) p.phonics = createDefaultProgress().phonics;
     p.phonics.endSoundTotal++;
     if (correct) p.phonics.endSoundCorrect++;
     p.global.lastActivity = Date.now();
@@ -470,7 +464,7 @@ export function recordEndSound(correct) {
 
 export function getPhonicsStats() {
     const p = getProgress();
-    const ph = p.phonics || createDefaultProgress().phonics;
+    const ph = p.phonics;
     return {
         totalCorrect: (ph.soundMatchCorrect || 0) + (ph.soundSortCorrect || 0) + (ph.endSoundCorrect || 0),
         totalAttempts: (ph.soundMatchTotal || 0) + (ph.soundSortTotal || 0) + (ph.endSoundTotal || 0),
@@ -483,15 +477,13 @@ export function getPhonicsStats() {
 
 export function addRhymeStars(count) {
     const p = getProgress();
-    if (!p.rhyme) p.rhyme = createDefaultProgress().rhyme;
-    p.rhyme.stars = (p.rhyme.stars || 0) + count;
+    p.rhyme.stars += count;
     p.global.lastActivity = Date.now();
     saveProgress(p);
 }
 
 export function recordRhymeMatch(correct) {
     const p = getProgress();
-    if (!p.rhyme) p.rhyme = createDefaultProgress().rhyme;
     p.rhyme.rhymeMatchTotal++;
     if (correct) p.rhyme.rhymeMatchCorrect++;
     p.global.lastActivity = Date.now();
@@ -500,7 +492,6 @@ export function recordRhymeMatch(correct) {
 
 export function recordRhymeSort(correct) {
     const p = getProgress();
-    if (!p.rhyme) p.rhyme = createDefaultProgress().rhyme;
     p.rhyme.rhymeSortTotal++;
     if (correct) p.rhyme.rhymeSortCorrect++;
     p.global.lastActivity = Date.now();
@@ -509,7 +500,6 @@ export function recordRhymeSort(correct) {
 
 export function recordOddOneOut(correct) {
     const p = getProgress();
-    if (!p.rhyme) p.rhyme = createDefaultProgress().rhyme;
     p.rhyme.oddOneOutTotal++;
     if (correct) p.rhyme.oddOneOutCorrect++;
     p.global.lastActivity = Date.now();
@@ -518,7 +508,7 @@ export function recordOddOneOut(correct) {
 
 export function getRhymeStats() {
     const p = getProgress();
-    const rh = p.rhyme || createDefaultProgress().rhyme;
+    const rh = p.rhyme;
     return {
         totalCorrect: (rh.rhymeMatchCorrect || 0) + (rh.rhymeSortCorrect || 0) + (rh.oddOneOutCorrect || 0),
         totalAttempts: (rh.rhymeMatchTotal || 0) + (rh.rhymeSortTotal || 0) + (rh.oddOneOutTotal || 0),

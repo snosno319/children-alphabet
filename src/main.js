@@ -10,7 +10,6 @@ import { renderPaywall, injectPaywallStyles } from './components/Paywall.js';
 import { renderHub, injectHubStyles } from './hub/home.js';
 
 import { renderProfileScreen, injectProfileStyles } from './screens/profile.js';
-import { getProfiles } from './shared/storage.js';
 
 // Parents
 import { renderParents, injectParentsStyles } from './screens/parents.js';
@@ -191,11 +190,7 @@ function renderScreen(screen, props = {}) {
         // Render Paywall directly into app (blocking)
         renderPaywall(app, navigate, null);
     } else {
-        // ALWAYS show profile picker on boot so siblings don't overwrite each other
-        if (getProfiles().length === 0) {
-           navigate('profile'); // Forces creation
-        } else {
-           navigate('profile'); // Let them pick who is playing
-        }
+        // Always show profile picker on boot so siblings don't overwrite each other
+        navigate('profile');
     }
 })();

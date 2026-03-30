@@ -7,14 +7,20 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "generate-audio": "node scripts/generate-audio.mjs"
+    "generate-audio": "node scripts/generate-audio.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
     "@gradio/client": "^2.1.0",
+    "@vitest/coverage-v8": "^4.1.2",
+    "jsdom": "^29.0.1",
     "kokoro-js": "^1.2.0",
     "typescript": "~5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^4.1.2"
   },
   "dependencies": {
     "@capacitor/android": "^8.1.0",
