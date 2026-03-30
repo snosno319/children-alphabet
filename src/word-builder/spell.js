@@ -30,7 +30,7 @@ export function renderSpell(app, navigate) {
     </div>
   `;
 
-  document.getElementById('spell-back').addEventListener('click', () => { playPopSound(); window.speechSynthesis.cancel(); navigate('home'); });
+  document.getElementById('spell-back').addEventListener('click', () => { playPopSound(); window.speechSynthesis?.cancel(); navigate('wordBuilder-home'); });
   setTimeout(() => { speakInstruction('spell_entry'); setTimeout(() => showSpellWord(), 2500); }, 800);
 }
 

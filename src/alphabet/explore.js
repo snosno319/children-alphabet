@@ -86,7 +86,7 @@ export function renderExplore(app, navigate, props = {}) {
     if (window.isJourneyMode) {
       exitJourney(navigate);
     } else {
-      navigate('home');
+      navigate('alphabet-home');
     }
   });
 

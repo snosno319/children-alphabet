@@ -60,8 +60,8 @@ function nextRound(app, navigate) {
     // Handlers
     document.getElementById('oo-back').addEventListener('click', () => {
         playPopSound();
-        window.speechSynthesis.cancel();
-        navigate('home');
+        window.speechSynthesis?.cancel();
+        navigate('rhyme-home');
     });
 
     document.querySelectorAll('.oo-card').forEach(card => {
@@ -116,7 +116,7 @@ function showCelebration(app, navigate) {
 
     document.getElementById('oo-home').addEventListener('click', () => {
         playPopSound();
-        navigate('home');
+        navigate('rhyme-home');
     });
 }
 

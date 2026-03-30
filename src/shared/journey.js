@@ -84,7 +84,9 @@ export function getJourneyState() {
                 return data;
             }
         }
-    } catch(e) {}
+    } catch (e) {
+        console.warn('[journey] Failed to load journey state; starting fresh.', e);
+    }
     
     // Generate new path
     const newState = buildDailyPath();

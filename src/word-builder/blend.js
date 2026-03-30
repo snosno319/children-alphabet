@@ -27,7 +27,7 @@ export function renderBlend(app, navigate) {
   `;
 
   document.getElementById('blend-back').addEventListener('click', () => {
-    playPopSound(); window.speechSynthesis.cancel(); navigate('home');
+    playPopSound(); window.speechSynthesis?.cancel(); navigate('wordBuilder-home');
   });
 
   setTimeout(() => {

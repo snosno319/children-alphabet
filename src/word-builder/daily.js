@@ -1,21 +1,19 @@
 /**
  * Daily Challenge Screen — Word Builder Lab
  * One word per day. Child spells it to maintain their streak.
- * Premium subscription feature.
  */
 import { getDailyWord, ALL_CONSONANTS } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction, playSnapSound, speak } from '../shared/audio.js';
-import { markDailyCompleted, isDailyCompleted, getStreak, addWordBuilderStars } from '../shared/storage.js';
+import { completeDailyChallenge, isDailyCompleted, getStreak, addWordBuilderStars } from '../shared/storage.js';
 import { spawnConfetti } from '../shared/confetti.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
 
-export function renderDaily(app, props) {
-  const { navigate } = props;
+export function renderDaily(app, navigate, props = {}) {
   const dailyWord = getDailyWord();
   const alreadyDone = isDailyCompleted();
 
   if (alreadyDone) {
-    showAlreadyComplete(app, props);
+    showAlreadyComplete(app, navigate);
     return;
   }
 
@@ -54,7 +52,7 @@ export function renderDaily(app, props) {
 
   document.getElementById('daily-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
     if (window.isJourneyMode) exitJourney(navigate);
     else navigate('wordBuilder-home');
   });
@@ -83,7 +81,7 @@ export function renderDaily(app, props) {
 
       if (selectedLetters.length === dailyWord.word.length) {
         answered = true;
-        markDailyCompleted();
+        completeDailyChallenge();
         addWordBuilderStars(10);
         spawnConfetti();
 
@@ -93,7 +91,7 @@ export function renderDaily(app, props) {
           feedback.innerHTML = '🎉🔥🎉';
           feedback.className = 'daily-feedback correct-fb';
           await speak(dailyWord.word, { spellOut: true });
-          showDailyComplete(app, navigate, props.localNavigate);
+          showDailyComplete(app, navigate, props.localNavigate || navigate);
         }, 300);
       }
     } else {
@@ -105,8 +103,7 @@ export function renderDaily(app, props) {
   });
 }
 
-function showAlreadyComplete(app, props) {
-  const { navigate } = props;
+function showAlreadyComplete(app, navigate) {
   const streak = getStreak();
   app.innerHTML = `
     <div class="screen daily-screen" id="daily">

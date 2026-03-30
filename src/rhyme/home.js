@@ -45,7 +45,7 @@ export function renderHome(app, navigate) {
 
     document.getElementById('rhyme-hub-back').addEventListener('click', () => {
         playPopSound();
-        window.speechSynthesis.cancel();
+        window.speechSynthesis?.cancel();
         navigate('hub');
     });
 

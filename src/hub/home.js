@@ -5,8 +5,6 @@
  */
 import { getTotalStars, getSubAppStars } from '../shared/storage.js';
 import { playPopSound, speakInstruction } from '../shared/audio.js';
-import { renderPaywall, injectPaywallStyles } from '../components/Paywall.js';
-import { SubscriptionService } from '../services/subscription.js';
 import { startJourney, getJourneyState } from '../shared/journey.js';
 
 const SUB_APPS = [
@@ -76,12 +74,6 @@ export function renderHub(app, navigate) {
              <span class="upgrade-icon">📊</span>
              <span>Parents</span>
            </button>
-           ${!SubscriptionService.isPro ? `
-            <button class="upgrade-btn" id="hub-upgrade">
-              <span class="upgrade-icon">👑</span>
-              <span>Get Pro</span>
-            </button>
-          ` : ''}
           <div class="hub-stars">
             <span class="star-icon">⭐</span>
             <span>${totalStars}</span>
@@ -100,7 +92,7 @@ export function renderHub(app, navigate) {
         <span class="hub-logo-letter" style="--d:6; color:#42A5F5">h</span>
       </div>
 
-      <!-- [NEW] Journey Banner -->
+      <!-- Journey Banner -->
       <button class="hub-journey-banner" id="hub-journey">
         <div class="journey-avatar">🧭</div>
         <div class="journey-text">
@@ -133,7 +125,7 @@ export function renderHub(app, navigate) {
   if (btnJourney) {
     btnJourney.addEventListener('click', () => {
       playPopSound();
-      window.speechSynthesis.cancel();
+      window.speechSynthesis?.cancel();
       // Animate compress
       btnJourney.style.transform = 'scale(0.95)';
       const state = getJourneyState();
@@ -146,7 +138,7 @@ export function renderHub(app, navigate) {
   if (btnParents) {
     btnParents.addEventListener('click', () => {
       playPopSound();
-      window.speechSynthesis.cancel();
+      window.speechSynthesis?.cancel();
       navigate('parents');
     });
   }
@@ -157,32 +149,13 @@ export function renderHub(app, navigate) {
       playPopSound();
       card.style.transform = 'scale(0.88)';
       setTimeout(() => {
-        window.speechSynthesis.cancel();
+        window.speechSynthesis?.cancel();
         const appId = card.dataset.app;
         navigate(`${appId}-home`);
       }, 150);
     });
   });
 
-  const upgradeBtn = document.getElementById('hub-upgrade');
-  if (upgradeBtn) {
-    upgradeBtn.addEventListener('click', () => {
-      playPopSound();
-      injectPaywallStyles();
-      const modal = document.createElement('div');
-      modal.id = 'paywall-modal';
-      modal.style.position = 'fixed';
-      modal.style.inset = '0';
-      modal.style.zIndex = '1000';
-      document.body.appendChild(modal);
-
-      renderPaywall(modal, navigate, () => {
-        document.body.removeChild(modal);
-        // Re-render hub to update button state
-        renderHub(app, navigate);
-      });
-    });
-  }
 }
 
 export function injectHubStyles() {

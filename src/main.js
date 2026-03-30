@@ -1,14 +1,13 @@
 /**
  * English Adventure — Main Router
- * Unified app entry point routing between hub and all 6 sub-apps.
+ *
+ * Single entry point for the app. Maps screen IDs to render functions and
+ * handles screen transitions. All navigation goes through `navigate(screen, props)`.
  */
 import { preloadVoices } from './shared/audio.js';
-import { SubscriptionService } from './services/subscription.js';
-import { renderPaywall, injectPaywallStyles } from './components/Paywall.js';
 
 // Hub
 import { renderHub, injectHubStyles } from './hub/home.js';
-
 import { renderProfileScreen, injectProfileStyles } from './screens/profile.js';
 
 // Parents
@@ -39,13 +38,13 @@ import { renderPicMatch, injectPicMatchStyles } from './word-builder/picmatch.js
 import { renderBlend, injectBlendStyles } from './word-builder/blend.js';
 import { renderDaily, injectDailyStyles } from './word-builder/daily.js';
 
-// [NEW] Phonics Lab
+// Phonics Lab
 import { renderHome as renderPhonicsHome, injectHomeStyles as injectPhonicsHomeStyles } from './phonics/home.js';
 import { renderSoundMatch, injectSoundMatchStyles } from './phonics/sound-match.js';
 import { renderSoundSort, injectSoundSortStyles } from './phonics/sound-sort.js';
 import { renderEndSound, injectEndSoundStyles } from './phonics/end-sound.js';
 
-// [NEW] Rhyme Time
+// Rhyme Time
 import { renderHome as renderRhymeHome, injectHomeStyles as injectRhymeHomeStyles } from './rhyme/home.js';
 import { renderRhymeMatch, injectRhymeMatchStyles } from './rhyme/rhyme-match.js';
 import { renderRhymeSort, injectRhymeSortStyles } from './rhyme/rhyme-sort.js';
@@ -99,38 +98,7 @@ const SCREENS = {
     'odd-one-out': { render: renderOddOneOut, styles: injectOddOneOutStyles },
 };
 
-// Map sub-app "home" screens — used when a within-app back button says "home"
-const HOME_REDIRECT = {
-    'explore': 'alphabet-home',
-    'trace': 'alphabet-home',
-    'quiz': 'alphabet-home',
-    'cvc-explore': 'cvc-home',
-    'build': 'cvc-home',
-    'cvc-quiz': 'cvc-home',
-    'flashcards': 'sight-home',
-    'match': 'sight-home',
-    'stories': 'sight-home',
-    'spell': 'wordBuilder-home',
-    'picmatch': 'wordBuilder-home',
-    'blend': 'wordBuilder-home',
-    'daily': 'wordBuilder-home',
-    // New mappings
-    'sound-match': 'phonics-home',
-    'sound-sort': 'phonics-home',
-    'end-sound': 'phonics-home',
-    'rhyme-match': 'rhyme-home',
-    'rhyme-sort': 'rhyme-home',
-    'odd-one-out': 'rhyme-home',
-};
-
 function navigate(screen, props = {}) {
-    // Intercept sub-app 'home' navigations from legacy code
-    if (screen === 'home') {
-        // Figure out which sub-app we're in and go to its home
-        const redirect = HOME_REDIRECT[currentScreen];
-        screen = redirect || 'hub';
-    }
-
     // Only bail on identical screen if props are also empty (avoids journey looping bug)
     if (screen === currentScreen && Object.keys(props).length === 0) return;
 
@@ -158,39 +126,6 @@ function renderScreen(screen, props = {}) {
     entry.render(app, navigate, props);
 }
 
-// Initial load
-(async () => {
-    console.log("APP BOOT: START");
-    // 1. Initialize Subscription Service
-    try {
-        await SubscriptionService.initialize();
-        console.log("APP BOOT: Subscription initialized");
-    } catch(e) {
-        console.error("APP BOOT: Subscription failed", e);
-    }
-
-    // 2. Check Trial Status
-    const TRIAL_DAYS = 30;
-    let firstLaunch = localStorage.getItem('first_launch_date');
-    if (!firstLaunch) {
-        firstLaunch = Date.now().toString();
-        localStorage.setItem('first_launch_date', firstLaunch);
-    }
-
-    const daysSinceLaunch = (Date.now() - parseInt(firstLaunch)) / (1000 * 60 * 60 * 24);
-    const isExpired = daysSinceLaunch > TRIAL_DAYS;
-
-    // 3. Preload & Navigate
-    console.log("APP BOOT: Preloading voices");
-    preloadVoices();
-
-    console.log(`APP BOOT: Checking expiration... expired: ${isExpired}, isPro: ${SubscriptionService.isPro}`);
-    if (isExpired && !SubscriptionService.isPro) {
-        injectPaywallStyles();
-        // Render Paywall directly into app (blocking)
-        renderPaywall(app, navigate, null);
-    } else {
-        // Always show profile picker on boot so siblings don't overwrite each other
-        navigate('profile');
-    }
-})();
+// Initial load — preload audio then go to profile picker
+preloadVoices();
+navigate('profile');

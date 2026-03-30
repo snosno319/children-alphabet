@@ -43,7 +43,7 @@ export function renderBuild(app, navigate, props = {}) {
 
   document.getElementById('build-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
     if (window.isJourneyMode) exitJourney(navigate);
     else navigate('cvc-home');
   });

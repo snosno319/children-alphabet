@@ -29,7 +29,7 @@ export function renderPicMatch(app, navigate) {
     </div>
   `;
 
-  document.getElementById('pm-back').addEventListener('click', () => { playPopSound(); window.speechSynthesis.cancel(); navigate('home'); });
+  document.getElementById('pm-back').addEventListener('click', () => { playPopSound(); window.speechSynthesis?.cancel(); navigate('wordBuilder-home'); });
   setTimeout(() => { speakInstruction('picmatch_entry'); setTimeout(() => showPMQuestion(), 2500); }, 800);
 }
 

@@ -81,7 +81,7 @@ export function playAudio(path, fallbackText = '') {
 
         // Use preloaded element if available (clone it so it can be replayed)
         const audio = _cache[path]
-            ? (() => { const a = _cache[path].cloneNode(); return a; })()
+            ? _cache[path].cloneNode()
             : new Audio(path);
 
         _current = audio;
