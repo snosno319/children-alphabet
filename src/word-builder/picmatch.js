@@ -117,6 +117,7 @@ function handlePMAnswer(word) {
     }
 
     playWrongSound();
+    speakInstruction('wrong');
     feedback.innerHTML = q.correct.emoji;
     feedback.className = 'pm-feedback wrong-fb';
     

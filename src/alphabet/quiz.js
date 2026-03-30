@@ -186,6 +186,7 @@ function handleAnswer(selectedLetter) {
     }
     
     playWrongSound();
+    speakInstruction('quiz_wrong');
     // Show correct answer as emoji — voice explains
     feedback.innerHTML = `${q.correct.emoji}`;
     feedback.className = 'quiz-feedback wrong-feedback';

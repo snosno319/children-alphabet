@@ -99,6 +99,7 @@ function nextRound(app, navigate) {
         btn.classList.add('correct');
         recordEndSound(true);
         score++;
+        setTimeout(() => speakInstruction('correct'), 700);
 
         setTimeout(() => {
           currentRound++;
@@ -110,6 +111,7 @@ function nextRound(app, navigate) {
         btn.classList.add('wrong');
         btn.disabled = true;
         recordEndSound(false);
+        setTimeout(() => speakInstruction('wrong'), 700);
       }
     });
   });

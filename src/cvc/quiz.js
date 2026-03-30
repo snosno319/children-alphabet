@@ -157,6 +157,7 @@ function handleAnswer(selectedWord) {
     }
 
     playWrongSound();
+    speakInstruction('wrong');
     feedback.innerHTML = `${q.correct.emoji}`;
     feedback.className = 'quiz-feedback wrong-feedback';
     

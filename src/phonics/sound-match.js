@@ -95,6 +95,7 @@ function nextRound(app, navigate) {
         btn.classList.add('correct');
         recordSoundMatch(true);
         score++;
+        setTimeout(() => speakInstruction('correct'), 700);
 
         // Pop animation
         btn.style.animation = 'pop 0.3s forwards';
@@ -110,6 +111,7 @@ function nextRound(app, navigate) {
         btn.classList.add('wrong');
         btn.disabled = true;
         recordSoundMatch(false);
+        setTimeout(() => speakInstruction('wrong'), 700);
       }
     });
   });

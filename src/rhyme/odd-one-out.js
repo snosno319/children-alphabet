@@ -76,6 +76,7 @@ function nextRound(app, navigate) {
                 card.classList.add('correct');
                 recordOddOneOut(true);
                 score++;
+                setTimeout(() => speakInstruction('correct'), 700);
 
                 setTimeout(() => {
                     currentRound++;
@@ -83,6 +84,7 @@ function nextRound(app, navigate) {
                 }, 1200);
             } else {
                 playWrongSound();
+                setTimeout(() => speakInstruction('wrong'), 700);
                 card.classList.add('wrong');
                 card.disabled = true;
                 recordOddOneOut(false);

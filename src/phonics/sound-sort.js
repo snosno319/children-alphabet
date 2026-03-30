@@ -88,6 +88,7 @@ function nextRound(app, navigate) {
         playCorrectSound();
         playSwipeSound(); // Whoosh effect
         speakLetterFull(selected);
+        setTimeout(() => speakInstruction('correct'), 700);
 
         // Animate card moving to bucket
         const card = document.getElementById('ss-card');
@@ -111,6 +112,7 @@ function nextRound(app, navigate) {
       } else {
         // Wrong
         playWrongSound();
+        speakInstruction('wrong');
         bucket.style.animation = 'shake 0.4s';
         setTimeout(() => bucket.style.animation = '', 400);
         recordSoundSort(false);
