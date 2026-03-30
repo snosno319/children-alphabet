@@ -5,8 +5,6 @@
  */
 import { getTotalStars, getSubAppStars } from '../shared/storage.js';
 import { playPopSound, speakInstruction } from '../shared/audio.js';
-import { renderPaywall, injectPaywallStyles } from '../components/Paywall.js';
-import { SubscriptionService } from '../services/subscription.js';
 import { startJourney, getJourneyState } from '../shared/journey.js';
 
 const SUB_APPS = [
@@ -76,12 +74,6 @@ export function renderHub(app, navigate) {
              <span class="upgrade-icon">📊</span>
              <span>Parents</span>
            </button>
-           ${!SubscriptionService.isPro ? `
-            <button class="upgrade-btn" id="hub-upgrade">
-              <span class="upgrade-icon">👑</span>
-              <span>Get Pro</span>
-            </button>
-          ` : ''}
           <div class="hub-stars">
             <span class="star-icon">⭐</span>
             <span>${totalStars}</span>
@@ -164,25 +156,6 @@ export function renderHub(app, navigate) {
     });
   });
 
-  const upgradeBtn = document.getElementById('hub-upgrade');
-  if (upgradeBtn) {
-    upgradeBtn.addEventListener('click', () => {
-      playPopSound();
-      injectPaywallStyles();
-      const modal = document.createElement('div');
-      modal.id = 'paywall-modal';
-      modal.style.position = 'fixed';
-      modal.style.inset = '0';
-      modal.style.zIndex = '1000';
-      document.body.appendChild(modal);
-
-      renderPaywall(modal, navigate, () => {
-        document.body.removeChild(modal);
-        // Re-render hub to update button state
-        renderHub(app, navigate);
-      });
-    });
-  }
 }
 
 export function injectHubStyles() {

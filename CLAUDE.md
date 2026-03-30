@@ -1,15 +1,13 @@
 # English Adventure — Children's Alphabet Learning App
 
 ## What This Is
-Voice-guided alphabet and literacy learning app for ages 4-6. Built with Vanilla JS + Vite + Capacitor (iOS/Android). Uses pre-generated Kokoro TTS audio files. Has RevenueCat subscription integration (free 30-day trial → Pro).
+Voice-guided alphabet and literacy learning app for ages 4-6. Built with Vanilla JS + Vite + Capacitor (iOS/Android). Uses pre-generated Kokoro TTS audio files (348 WAV files bundled in `public/audio/`).
 
 ## Tech Stack
 - Vanilla JavaScript (ES Modules), Vite 7.3.1
 - Capacitor 8.1.0 for iOS/Android native builds
-- RevenueCat (purchases-capacitor) for subscriptions
-- Kokoro TTS (kokoro-js) for audio generation
-- Pre-generated WAV files in `public/audio/`
-- Vitest 4.1.2 + jsdom 29.0.1 for testing (226 tests, all passing)
+- Kokoro TTS (kokoro-js) — used to pre-generate audio; 348 WAV files bundled in `public/audio/`
+- Vitest 4.1.2 + jsdom 29.0.1 for testing (205 tests, all passing)
 
 ## App Structure — 6 Sub-Apps
 1. **ABCs** (`src/alphabet/`) — letter exploration, tracing, quizzes
@@ -23,16 +21,14 @@ Voice-guided alphabet and literacy learning app for ages 4-6. Built with Vanilla
 - Multi-profile system (siblings with separate progress)
 - Journey Mode — guided adaptive daily learning path (`src/shared/journey.js`)
 - Parent Dashboard — math verification gate (`src/screens/parents.js`)
-- Paywall component (`src/components/Paywall.js`)
 - Full offline support after initial load
 
 ## Current State
 **Build: PASSING. All 6 modules fully implemented.**
 
 ### Known Issues (pre-launch)
-- **RevenueCat API keys are placeholders** — `src/services/subscription.js` line 3 has `'appl_YOUR_IOS_API_KEY'` and `'goog_YOUR_ANDROID_API_KEY'` — must be replaced before App Store/Play Store submission
-- **TTS fallback disabled** — `src/shared/audio.js` `speakTTS()` intentionally returns early with a `console.warn`; pre-generated audio must exist for all strings
-- **Audio generation script broken** — `scripts/generate-audio.mjs` has `TypeError: EdgeTTS is not a constructor`; not required for runtime but needed to generate new audio files
+- **TTS fallback disabled** — `src/shared/audio.js` `speakTTS()` intentionally returns early; the 348 bundled WAV files cover all strings. Only an issue if new strings are added.
+- **Audio generation script broken** — `scripts/generate-audio.mjs` has `TypeError: EdgeTTS is not a constructor`; not needed at runtime, only needed if you add new audio strings.
 
 ## Architecture Notes
 
@@ -56,23 +52,20 @@ Voice-guided alphabet and literacy learning app for ages 4-6. Built with Vanilla
 - `advanceJourney(navigate)` / `exitJourney(navigate)` — call these instead of navigating directly when in journey mode
 
 ## Key Files
-- `src/main.js` — router/entry point (~175 lines, 26 screens)
+- `src/main.js` — router/entry point (~100 lines, 26 screens)
 - `src/shared/audio.js` — audio engine (~550 lines)
 - `src/shared/storage.js` — localStorage progress tracking, multi-profile
 - `src/shared/journey.js` — adaptive daily learning path
-- `src/services/subscription.js` — RevenueCat integration (needs real keys)
-- `public/audio/` — pre-generated WAV files
+- `public/audio/` — 348 pre-generated WAV files (letters/, phonics/, words/, intro/, feedback/, facts/, ui/, extras/)
 
 ## Dev Commands
 ```sh
 npm run dev           # Vite dev server
 npm run build         # production build (passes)
-npm test              # run all 226 tests
+npm test              # run all tests (~205)
 npm run test:watch    # watch mode
 npm run test:coverage # coverage report
 ```
 
 ## Priority Next Steps
-1. **Replace RevenueCat keys** when ready for store submission (`src/services/subscription.js` line 3)
-2. **Fix audio generation script** (`scripts/generate-audio.mjs`) if new audio files need to be generated
-3. **Remove `APP BOOT:` console.logs** from `src/main.js` before release
+1. **Fix audio generation script** (`scripts/generate-audio.mjs`) if new audio strings need to be added

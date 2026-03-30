@@ -5,8 +5,6 @@
  * handles screen transitions. All navigation goes through `navigate(screen, props)`.
  */
 import { preloadVoices } from './shared/audio.js';
-import { SubscriptionService } from './services/subscription.js';
-import { renderPaywall, injectPaywallStyles } from './components/Paywall.js';
 
 // Hub
 import { renderHub, injectHubStyles } from './hub/home.js';
@@ -128,34 +126,6 @@ function renderScreen(screen, props = {}) {
     entry.render(app, navigate, props);
 }
 
-// Initial load
-(async () => {
-    // 1. Initialize Subscription Service
-    try {
-        await SubscriptionService.initialize();
-    } catch(e) {
-        console.error('Subscription initialization failed', e);
-    }
-
-    // 2. Check Trial Status
-    const TRIAL_DAYS = 30;
-    let firstLaunch = localStorage.getItem('first_launch_date');
-    if (!firstLaunch) {
-        firstLaunch = Date.now().toString();
-        localStorage.setItem('first_launch_date', firstLaunch);
-    }
-
-    const daysSinceLaunch = (Date.now() - parseInt(firstLaunch)) / (1000 * 60 * 60 * 24);
-    const isExpired = daysSinceLaunch > TRIAL_DAYS;
-
-    // 3. Preload & Navigate
-    preloadVoices();
-    if (isExpired && !SubscriptionService.isPro) {
-        injectPaywallStyles();
-        // Render Paywall directly into app (blocking)
-        renderPaywall(app, navigate, null);
-    } else {
-        // Always show profile picker on boot so siblings don't overwrite each other
-        navigate('profile');
-    }
-})();
+// Initial load — preload audio then go to profile picker
+preloadVoices();
+navigate('profile');

@@ -14,7 +14,6 @@ A voice-guided literacy learning app for ages 4–6. Children tap, trace, and li
 - **Multi-profile** — separate progress for siblings
 - **Audio-first UX** — all instructions spoken aloud; no text required for child interaction
 - **Offline capable** — works fully offline after initial load
-- **Subscription** — 30-day free trial, then Pro via RevenueCat
 
 ## Prerequisites
 
@@ -96,9 +95,8 @@ npm run generate-audio -- --dry-run     # preview without writing
 
 ## Before App Store Submission
 
-1. Replace RevenueCat API key placeholders in `src/services/subscription.js`
-2. Fix or remove the `APP BOOT:` console.log calls in `src/main.js`
-3. Ensure all audio files are generated for any new strings
+1. Ensure all audio files are generated for any new strings (`npm run generate-audio`)
+2. Fix `scripts/generate-audio.mjs` if the EdgeTTS import is still broken
 
 ## License
 

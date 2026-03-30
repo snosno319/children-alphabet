@@ -1,7 +1,6 @@
 /**
  * Daily Challenge Screen — Word Builder Lab
  * One word per day. Child spells it to maintain their streak.
- * Premium subscription feature.
  */
 import { getDailyWord, ALL_CONSONANTS } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction, playSnapSound, speak } from '../shared/audio.js';
