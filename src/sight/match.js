@@ -7,6 +7,7 @@ import { SIGHT_WORDS } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playCelebrationSound, playPopSound, speakInstruction, speak } from '../shared/audio.js';
 import { recordMatchAnswer, addSightStars } from '../shared/storage.js';
 import { spawnConfetti } from '../shared/confetti.js';
+import { floatStars } from '../shared/feedback.js';
 
 let questionIndex = 0;
 let score = 0;
@@ -127,6 +128,8 @@ function handleAnswer(selectedWord) {
     feedback.className = 'match-feedback correct-feedback';
     document.getElementById('match-score').textContent = `⭐ ${score * 3}`;
     speakInstruction('correct');
+    const correctBtn = Array.from(buttons).find(b => b.dataset.word === q.correct.word);
+    floatStars(correctBtn, 3);
   } else {
     playWrongSound();
     feedback.innerHTML = `${q.correct.emoji}`;

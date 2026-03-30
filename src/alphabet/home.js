@@ -53,19 +53,22 @@ export function renderHome(app, navigate) {
         </div>
       </div>
 
-      <!-- Navigation — ICON ONLY, no text labels -->
+      <!-- Navigation cards -->
       <div class="home-nav">
         <button class="home-nav-btn explore-btn" data-screen="explore">
           <span class="home-nav-icon">📖</span>
+          <span class="home-nav-label">Explore</span>
           <div class="tap-hint" id="tap-hint-1">
             <span class="tap-hand">👆</span>
           </div>
         </button>
         <button class="home-nav-btn trace-btn" data-screen="trace">
           <span class="home-nav-icon">✏️</span>
+          <span class="home-nav-label">Trace</span>
         </button>
         <button class="home-nav-btn quiz-btn" data-screen="quiz">
           <span class="home-nav-icon">🧩</span>
+          <span class="home-nav-label">Quiz</span>
         </button>
       </div>
     </div>
@@ -215,27 +218,29 @@ export function injectHomeStyles() {
       font-size: 1.5rem;
     }
 
-    /* Navigation — large icon-only circles */
+    /* Navigation cards */
     .home-nav {
       display: flex;
-      gap: var(--space-2xl);
+      gap: var(--space-lg);
       z-index: 1;
       justify-content: center;
     }
     .home-nav-btn {
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
+      width: 110px;
+      padding: var(--space-lg) var(--space-sm) var(--space-md);
+      border-radius: var(--radius-xl);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: var(--shadow-xl);
-      transition: transform var(--transition-bounce), box-shadow var(--transition-base);
+      gap: var(--space-sm);
+      box-shadow: 0 6px 0 rgba(0,0,0,0.2), var(--shadow-lg);
+      transition: transform var(--transition-bounce), box-shadow 0.15s;
       position: relative;
-      animation: pulse 3s ease-in-out infinite;
     }
     .home-nav-btn:active {
-      box-shadow: var(--shadow-sm);
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.15), var(--shadow-sm);
     }
     .explore-btn {
       background: linear-gradient(135deg, #FF6B6B 0%, #FF8A65 100%);
@@ -271,9 +276,9 @@ export function injectHomeStyles() {
 
     /* Portrait */
     @media (max-aspect-ratio: 1/1) {
-      .home-nav { gap: var(--space-lg); }
-      .home-nav-btn { width: 120px; height: 120px; }
-      .home-nav-icon { font-size: 3rem; }
+      .home-nav { gap: var(--space-md); }
+      .home-nav-btn { width: 105px; }
+      .home-nav-icon { font-size: 2.8rem; }
       .home-logo-letter { font-size: var(--text-4xl); }
     }
   `;

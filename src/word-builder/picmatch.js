@@ -6,6 +6,7 @@ import { getRandomWords, getAllWords } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playCelebrationSound, playPopSound, speakInstruction, speak } from '../shared/audio.js';
 import { markWordMatched, addWordBuilderStars, recordWordBuilderAccuracy } from '../shared/storage.js';
 import { spawnConfetti } from '../shared/confetti.js';
+import { floatStars } from '../shared/feedback.js';
 
 let questionIndex = 0;
 let score = 0;
@@ -103,6 +104,8 @@ function handlePMAnswer(word) {
     feedback.className = 'pm-feedback correct-fb';
     document.getElementById('pm-score').textContent = `⭐ ${score * 3}`;
     speakInstruction('correct');
+    const correctBtn = Array.from(buttons).find(b => b.dataset.word === q.correct.word);
+    floatStars(correctBtn, 3);
   } else {
     wrongGuesses++;
 

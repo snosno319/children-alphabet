@@ -1,368 +1,468 @@
 /**
  * Hub Home Screen — English Adventure
- * A vibrant 2×2 grid of sub-app cards for 4-year-olds.
- * Each card shows the sub-app icon, star count, and a friendly color.
+ * Entry point for all sub-apps. Shows profile, streak, and 6 colorful app cards.
  */
-import { getTotalStars, getSubAppStars } from '../shared/storage.js';
+import {
+    getTotalStars, getSubAppStars, getActiveProfile, getStreak,
+    getAlphabetCompletionPercent, getCvcCompletionPercent,
+    getSightCompletionPercent, getWordBuilderCompletionPercent,
+    getPhonicsStats, getRhymeStats,
+} from '../shared/storage.js';
 import { playPopSound, speakInstruction } from '../shared/audio.js';
 import { startJourney, getJourneyState } from '../shared/journey.js';
 
 const SUB_APPS = [
-  {
-    id: 'alphabet',
-    icon: '🔤',
-    emoji: '🅰️',
-    bg: 'linear-gradient(135deg, #FF6B6B 0%, #FF8A65 100%)',
-    label: 'ABCs',
-  },
-  {
-    id: 'cvc',
-    icon: '🧩',
-    emoji: '📖',
-    bg: 'linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)',
-    label: 'Words',
-  },
-  {
-    id: 'sight',
-    icon: '⭐',
-    emoji: '👀',
-    bg: 'linear-gradient(135deg, #FFB300 0%, #FF8F00 100%)',
-    label: 'Reading',
-  },
-  {
-    id: 'wordBuilder',
-    icon: '🧪',
-    emoji: '✏️',
-    bg: 'linear-gradient(135deg, #66BB6A 0%, #2E7D32 100%)',
-    label: 'Spelling',
-  },
-  {
-    id: 'phonics',
-    icon: '🔊',
-    emoji: '👂',
-    bg: 'linear-gradient(135deg, #EF5350 0%, #D32F2F 100%)',
-    label: 'Phonics',
-  },
-  {
-    id: 'rhyme',
-    icon: '🎵',
-    emoji: '🎤',
-    bg: 'linear-gradient(135deg, #AB47BC 0%, #7B1FA2 100%)',
-    label: 'Rhyme',
-  },
+    {
+        id: 'alphabet',
+        icon: '🔤',
+        mascot: '🦁',
+        bg: 'linear-gradient(145deg, #FF6B6B 0%, #FF8A65 100%)',
+        shadow: '#D94F4F',
+        label: 'ABCs',
+        getCompletion: getAlphabetCompletionPercent,
+    },
+    {
+        id: 'cvc',
+        icon: '📖',
+        mascot: '🐬',
+        bg: 'linear-gradient(145deg, #42A5F5 0%, #1E88E5 100%)',
+        shadow: '#1565C0',
+        label: 'Words',
+        getCompletion: getCvcCompletionPercent,
+    },
+    {
+        id: 'sight',
+        icon: '👀',
+        mascot: '🦉',
+        bg: 'linear-gradient(145deg, #FFB300 0%, #FF8F00 100%)',
+        shadow: '#E65100',
+        label: 'Reading',
+        getCompletion: getSightCompletionPercent,
+    },
+    {
+        id: 'wordBuilder',
+        icon: '✏️',
+        mascot: '🐸',
+        bg: 'linear-gradient(145deg, #66BB6A 0%, #2E7D32 100%)',
+        shadow: '#1B5E20',
+        label: 'Spelling',
+        getCompletion: getWordBuilderCompletionPercent,
+    },
+    {
+        id: 'phonics',
+        icon: '👂',
+        mascot: '🐧',
+        bg: 'linear-gradient(145deg, #EF5350 0%, #C62828 100%)',
+        shadow: '#7F0000',
+        label: 'Phonics',
+        getCompletion: () => {
+            const s = getPhonicsStats();
+            const total = s.soundMatch.correct + s.soundMatch.wrong + s.soundSort.correct + s.soundSort.wrong + s.endSound.correct + s.endSound.wrong;
+            if (!total) return 0;
+            const correct = s.soundMatch.correct + s.soundSort.correct + s.endSound.correct;
+            return Math.round((correct / total) * 100);
+        },
+    },
+    {
+        id: 'rhyme',
+        icon: '🎵',
+        mascot: '🦜',
+        bg: 'linear-gradient(145deg, #AB47BC 0%, #6A1B9A 100%)',
+        shadow: '#4A148C',
+        label: 'Rhymes',
+        getCompletion: () => {
+            const s = getRhymeStats();
+            const total = s.rhymeMatch.correct + s.rhymeMatch.wrong + s.rhymeSort.correct + s.rhymeSort.wrong + s.oddOneOut.correct + s.oddOneOut.wrong;
+            if (!total) return 0;
+            const correct = s.rhymeMatch.correct + s.rhymeSort.correct + s.oddOneOut.correct;
+            return Math.round((correct / total) * 100);
+        },
+    },
 ];
 
 export function renderHub(app, navigate) {
-  const totalStars = getTotalStars();
+    const totalStars = getTotalStars();
+    const profile = getActiveProfile();
+    const streak = getStreak();
+    const journeyState = getJourneyState();
+    const journeyStep = journeyState?.currentStep ?? 0;
+    const journeyTotal = 26 * 3; // rough total journey steps
 
-  app.innerHTML = `
-    <div class="screen hub-screen" id="hub">
-      <!-- Floating decorations -->
-      <div class="hub-decorations">
-        <span class="hub-deco" style="--i:0">🌈</span>
-        <span class="hub-deco" style="--i:1">⭐</span>
-        <span class="hub-deco" style="--i:2">🎈</span>
-        <span class="hub-deco" style="--i:3">🦋</span>
-        <span class="hub-deco" style="--i:4">🌟</span>
-        <span class="hub-deco" style="--i:5">✨</span>
-      </div>
+    app.innerHTML = `
+        <div class="screen hub-screen" id="hub">
+            <!-- Floating background bubbles -->
+            <div class="hub-bubbles" aria-hidden="true">
+                <div class="hub-bubble" style="--s:80px;--x:8%;--y:12%;--d:0s;--c:#FF6B6B22"></div>
+                <div class="hub-bubble" style="--s:60px;--x:85%;--y:8%;--d:1.2s;--c:#42A5F522"></div>
+                <div class="hub-bubble" style="--s:100px;--x:5%;--y:65%;--d:2s;--c:#A78BFA22"></div>
+                <div class="hub-bubble" style="--s:70px;--x:80%;--y:70%;--d:0.6s;--c:#4ECDC422"></div>
+                <div class="hub-bubble" style="--s:50px;--x:45%;--y:5%;--d:1.8s;--c:#FFB30022"></div>
+                <div class="hub-bubble" style="--s:90px;--x:90%;--y:45%;--d:3s;--c:#F472B622"></div>
+            </div>
 
-      <!-- Star counter -->
-      <div class="hub-header">
-        <div class="hub-actions">
-           <button class="upgrade-btn" id="hub-parents" style="background: linear-gradient(135deg, #94A3B8 0%, #64748B 100%); color: white; box-shadow: 0 4px 0 #475569;">
-             <span class="upgrade-icon">📊</span>
-             <span>Parents</span>
-           </button>
-          <div class="hub-stars">
-            <span class="star-icon">⭐</span>
-            <span>${totalStars}</span>
-          </div>
+            <!-- Top bar: profile + stars -->
+            <div class="hub-topbar">
+                <div class="hub-profile-chip">
+                    <span class="hub-profile-avatar">${profile?.avatar ?? '🌟'}</span>
+                    <span class="hub-profile-name">${profile?.name ?? 'Player'}</span>
+                </div>
+                <div class="hub-topbar-right">
+                    ${streak >= 2 ? `<div class="hub-streak-badge">🔥 ${streak}</div>` : ''}
+                    <div class="hub-stars-badge">⭐ ${totalStars}</div>
+                    <button class="hub-parents-btn" id="hub-parents" title="Parents">📊</button>
+                </div>
+            </div>
+
+            <!-- Logo -->
+            <div class="hub-logo" aria-label="English Adventure">
+                ${['E','n','g','l','i','s','h'].map((c, i) => `<span class="hub-logo-letter" style="--d:${i};color:${['#FF6B6B','#42A5F5','#FFB300','#66BB6A','#A78BFA','#FF6B6B','#42A5F5'][i]}">${c}</span>`).join('')}
+            </div>
+
+            <!-- Journey banner -->
+            <button class="hub-journey-banner" id="hub-journey">
+                <div class="journey-avatar">🧭</div>
+                <div class="journey-text">
+                    <div class="journey-title">Play Journey</div>
+                    <div class="journey-subtitle">Guided A to Z Adventure</div>
+                </div>
+                <div class="journey-right">
+                    ${journeyStep > 0 ? `<div class="journey-progress-pill">${journeyStep}/${journeyTotal}</div>` : ''}
+                    <div class="journey-play">▶</div>
+                </div>
+            </button>
+
+            <!-- Sub-app grid -->
+            <div class="hub-grid">
+                ${SUB_APPS.map((s, i) => {
+                    const pct = s.getCompletion();
+                    const stars = getSubAppStars(s.id);
+                    return `
+                    <button class="hub-card" data-app="${s.id}"
+                        style="--card-bg:${s.bg};--card-shadow:${s.shadow};animation-delay:${i * 70}ms">
+                        <div class="hub-card-mascot">${s.mascot}</div>
+                        <div class="hub-card-icon">${s.icon}</div>
+                        <div class="hub-card-label">${s.label}</div>
+                        ${pct > 0 ? `<div class="hub-card-progress-bar"><div class="hub-card-progress-fill" style="width:${pct}%"></div></div>` : ''}
+                        ${stars > 0 ? `<div class="hub-card-stars">⭐${stars}</div>` : ''}
+                    </button>`;
+                }).join('')}
+            </div>
         </div>
-      </div>
+    `;
 
-      <!-- Logo -->
-      <div class="hub-logo">
-        <span class="hub-logo-letter" style="--d:0; color:#FF6B6B">E</span>
-        <span class="hub-logo-letter" style="--d:1; color:#42A5F5">n</span>
-        <span class="hub-logo-letter" style="--d:2; color:#FFB300">g</span>
-        <span class="hub-logo-letter" style="--d:3; color:#66BB6A">l</span>
-        <span class="hub-logo-letter" style="--d:4; color:#A78BFA">i</span>
-        <span class="hub-logo-letter" style="--d:5; color:#FF6B6B">s</span>
-        <span class="hub-logo-letter" style="--d:6; color:#42A5F5">h</span>
-      </div>
+    // Auto-speak welcome
+    setTimeout(() => speakInstruction('welcome'), 800);
 
-      <!-- Journey Banner -->
-      <button class="hub-journey-banner" id="hub-journey">
-        <div class="journey-avatar">🧭</div>
-        <div class="journey-text">
-          <div class="journey-title">Play Journey</div>
-          <div class="journey-subtitle">Guided A to Z Learning Path</div>
-        </div>
-        <div class="journey-play">▶</div>
-      </button>
-
-      <!-- Sub-app cards -->
-      <div class="hub-grid">
-        ${SUB_APPS.map((subApp, i) => `
-          <button class="hub-card" data-app="${subApp.id}" style="--card-bg: ${subApp.bg}; animation-delay: ${i * 80}ms">
-            <span class="hub-card-icon">${subApp.icon}</span>
-            <span class="hub-card-emoji">${subApp.emoji}</span>
-            <div class="hub-card-stars">⭐ ${getSubAppStars(subApp.id)}</div>
-          </button>
-        `).join('')}
-      </div>
-    </div>
-  `;
-
-  // Auto-speak welcome
-  setTimeout(() => {
-    speakInstruction('welcome');
-  }, 800);
-
-  // Journey handler
-  const btnJourney = document.getElementById('hub-journey');
-  if (btnJourney) {
-    btnJourney.addEventListener('click', () => {
-      playPopSound();
-      window.speechSynthesis?.cancel();
-      // Animate compress
-      btnJourney.style.transform = 'scale(0.95)';
-      const state = getJourneyState();
-      // Map global step "explore" to alphabet's "explore", etc.
-      setTimeout(() => startJourney(navigate), 200);
-    });
-  }
-  // Parents handler
-  const btnParents = document.getElementById('hub-parents');
-  if (btnParents) {
-    btnParents.addEventListener('click', () => {
-      playPopSound();
-      window.speechSynthesis?.cancel();
-      navigate('parents');
-    });
-  }
-
-  // Card handlers
-  app.querySelectorAll('.hub-card').forEach(card => {
-    card.addEventListener('click', () => {
-      playPopSound();
-      card.style.transform = 'scale(0.88)';
-      setTimeout(() => {
+    // Journey
+    document.getElementById('hub-journey').addEventListener('click', () => {
+        playPopSound();
         window.speechSynthesis?.cancel();
-        const appId = card.dataset.app;
-        navigate(`${appId}-home`);
-      }, 150);
+        document.getElementById('hub-journey').style.transform = 'scale(0.96)';
+        setTimeout(() => startJourney(navigate), 200);
     });
-  });
 
+    // Parents
+    document.getElementById('hub-parents').addEventListener('click', () => {
+        playPopSound();
+        window.speechSynthesis?.cancel();
+        navigate('parents');
+    });
+
+    // Sub-app cards
+    app.querySelectorAll('.hub-card').forEach(card => {
+        card.addEventListener('click', () => {
+            playPopSound();
+            card.style.transform = 'scale(0.88)';
+            setTimeout(() => {
+                window.speechSynthesis?.cancel();
+                navigate(`${card.dataset.app}-home`);
+            }, 150);
+        });
+    });
 }
 
 export function injectHubStyles() {
-  if (document.getElementById('hub-styles')) return;
-  const style = document.createElement('style');
-  style.id = 'hub-styles';
-  style.textContent = `
-    .hub-screen {
-      background: linear-gradient(160deg, #FFF8F0 0%, #F0E6FF 30%, #E0F0FF 60%, #F0FFF0 100%);
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-xl);
-      padding: var(--space-xl);
-      overflow: hidden;
-    }
+    if (document.getElementById('hub-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'hub-styles';
+    style.textContent = `
+        .hub-screen {
+            background: linear-gradient(160deg, #FFF8F0 0%, #F0E6FF 35%, #E0F0FF 65%, #F0FFF0 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md) var(--space-lg) var(--space-lg);
+            overflow: hidden;
+        }
 
-    .hub-decorations {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-    .hub-deco {
-      position: absolute;
-      font-size: 2rem;
-      opacity: 0.10;
-      animation: float 5s ease-in-out infinite;
-      animation-delay: calc(var(--i) * 0.7s);
-    }
-    .hub-deco:nth-child(1) { top: 5%; left: 8%; }
-    .hub-deco:nth-child(2) { top: 10%; right: 12%; }
-    .hub-deco:nth-child(3) { bottom: 25%; left: 5%; }
-    .hub-deco:nth-child(4) { bottom: 10%; right: 8%; }
-    .hub-deco:nth-child(5) { top: 40%; right: 3%; }
-    .hub-deco:nth-child(6) { top: 50%; left: 3%; }
+        /* Animated background bubbles */
+        .hub-bubbles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .hub-bubble {
+            position: absolute;
+            width: var(--s);
+            height: var(--s);
+            left: var(--x);
+            top: var(--y);
+            border-radius: 50%;
+            background: var(--c);
+            animation: float 6s ease-in-out infinite;
+            animation-delay: var(--d);
+        }
 
-    .hub-header {
-      position: absolute;
-      top: var(--space-lg);
-      right: var(--space-xl);
-      left: var(--space-xl); /* Full width for layout */
-      display: flex;
-      justify-content: flex-end; /* Align to right */
-      pointer-events: none; /* Let clicks pass through container */
-    }
-    .hub-actions {
-      display: flex;
-      gap: var(--space-md);
-      align-items: center;
-      pointer-events: auto; /* Re-enable for buttons */
-    }
-    .upgrade-btn {
-      background: linear-gradient(135deg, #FFD54F 0%, #FFB300 100%);
-      border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--font-display);
-      font-weight: 700;
-      color: #333;
-      box-shadow: 0 4px 0 #F57F17;
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-    .upgrade-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #F57F17; }
-    .upgrade-icon { font-size: 1.2rem; }
-    
-    .hub-stars {
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs);
-      background: var(--color-surface);
-      padding: var(--space-sm) var(--space-md);
-      border-radius: var(--radius-full);
-      box-shadow: var(--shadow-md);
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: var(--text-lg);
-      color: #FFB300;
-    }
+        /* Top bar */
+        .hub-topbar {
+            width: 100%;
+            max-width: 640px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 2;
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+        .hub-profile-chip {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(8px);
+            padding: 6px 14px 6px 8px;
+            border-radius: var(--radius-full);
+            box-shadow: var(--shadow-md);
+        }
+        .hub-profile-avatar { font-size: 1.6rem; line-height: 1; }
+        .hub-profile-name {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: var(--text-base);
+            color: var(--color-text);
+            max-width: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .hub-topbar-right { display: flex; align-items: center; gap: var(--space-sm); }
 
-    .hub-logo {
-      display: flex;
-      gap: 4px;
-      z-index: 1;
-    }
-    .hub-logo-letter {
-      font-family: var(--font-display);
-      font-size: var(--text-4xl);
-      font-weight: 900;
-      animation: bounce 2.5s ease-in-out infinite;
-      animation-delay: calc(var(--d) * 0.12s);
-    }
+        .hub-streak-badge {
+            background: linear-gradient(135deg, #FF9500, #FF6B00);
+            color: white;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: var(--text-base);
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            box-shadow: 0 3px 0 #CC5200;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .hub-stars-badge {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(8px);
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: var(--text-base);
+            color: #E8900A;
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            box-shadow: var(--shadow-md);
+        }
+        .hub-parents-btn {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(8px);
+            box-shadow: var(--shadow-md);
+            font-size: 1.3rem;
+            display: flex; align-items: center; justify-content: center;
+            border: none; cursor: pointer;
+            transition: transform var(--transition-bounce);
+        }
+        .hub-parents-btn:active { transform: scale(0.88); }
 
-    /* Journey Banner */
-    .hub-journey-banner {
-      width: 100%;
-      max-width: 600px;
-      background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
-      border-radius: var(--radius-xl);
-      padding: var(--space-lg) var(--space-xl);
-      display: flex;
-      align-items: center;
-      gap: var(--space-lg);
-      border: none;
-      box-shadow: 0 8px 32px rgba(59,130,246,0.3), 0 4px 0 #2563EB;
-      cursor: pointer;
-      z-index: 1;
-      transition: transform var(--transition-bounce), box-shadow var(--transition-base);
-    }
-    .hub-journey-banner:active {
-      transform: scale(0.98) translateY(4px);
-      box-shadow: 0 4px 16px rgba(59,130,246,0.2), 0 0px 0 #2563EB;
-    }
-    .journey-avatar {
-      font-size: 3.5rem;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-      animation: float 4s ease-in-out infinite;
-    }
-    .journey-text {
-      flex: 1;
-      text-align: left;
-      display: flex;
-      flex-direction: column;
-    }
-    .journey-title {
-      font-family: var(--font-display);
-      font-size: var(--text-2xl);
-      font-weight: 900;
-      color: white;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .journey-subtitle {
-      font-family: var(--font-body);
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: rgba(255,255,255,0.9);
-    }
-    .journey-play {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: white;
-      color: #3B82F6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      animation: pulse 2s ease-in-out infinite;
-    }
+        /* Logo */
+        .hub-logo {
+            display: flex;
+            gap: 2px;
+            z-index: 1;
+        }
+        .hub-logo-letter {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 7vw, var(--text-4xl));
+            font-weight: 900;
+            animation: bounce 2.5s ease-in-out infinite;
+            animation-delay: calc(var(--d) * 0.1s);
+            text-shadow: 0 3px 0 rgba(0,0,0,0.12);
+        }
 
-    .hub-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-lg);
-      z-index: 1;
-      max-width: 600px;
-      width: 100%;
-    }
+        /* Journey banner */
+        .hub-journey-banner {
+            width: 100%;
+            max-width: 640px;
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            border-radius: var(--radius-xl);
+            padding: var(--space-md) var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            border: none;
+            box-shadow: 0 6px 0 #2563EB, 0 8px 24px rgba(59,130,246,0.3);
+            cursor: pointer;
+            z-index: 1;
+            transition: transform var(--transition-bounce), box-shadow 0.15s;
+        }
+        .hub-journey-banner:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #2563EB, 0 4px 12px rgba(59,130,246,0.2);
+        }
+        .journey-avatar {
+            font-size: 2.8rem;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
+            animation: float 4s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        .journey-text { flex: 1; text-align: left; }
+        .journey-title {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .journey-subtitle {
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+        }
+        .journey-right { display: flex; align-items: center; gap: var(--space-sm); }
+        .journey-progress-pill {
+            background: rgba(255,255,255,0.25);
+            color: white;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+        }
+        .journey-play {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: white;
+            color: #3B82F6;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            animation: pulse 2.2s ease-in-out infinite;
+            flex-shrink: 0;
+        }
 
-    .hub-card {
-      aspect-ratio: 1;
-      border-radius: var(--radius-xl);
-      background: var(--card-bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-sm);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 4px 0 rgba(0,0,0,0.1);
-      transition: transform var(--transition-bounce), box-shadow var(--transition-base);
-      position: relative;
-      animation: pop var(--transition-slow) backwards;
-      cursor: pointer;
-      border: none;
-      min-height: 140px;
-    }
-    .hub-card:active {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 2px 0 rgba(0,0,0,0.05);
-      transform: scale(0.95) translateY(2px);
-    }
+        /* Sub-app grid */
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+            z-index: 1;
+            width: 100%;
+            max-width: 640px;
+        }
+        .hub-card {
+            border-radius: var(--radius-xl);
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: var(--space-md) var(--space-sm) var(--space-sm);
+            box-shadow: 0 6px 0 var(--card-shadow), 0 8px 24px rgba(0,0,0,0.15);
+            cursor: pointer;
+            border: none;
+            animation: pop var(--transition-slow) backwards;
+            transition: transform 0.15s;
+            position: relative;
+            overflow: hidden;
+            min-height: 130px;
+        }
+        .hub-card:active {
+            transform: translateY(4px) scale(0.96);
+            box-shadow: 0 2px 0 var(--card-shadow), 0 4px 12px rgba(0,0,0,0.1);
+        }
+        /* Shine overlay */
+        .hub-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 45%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 100%);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            pointer-events: none;
+        }
+        .hub-card-mascot {
+            font-size: 2rem;
+            line-height: 1;
+            animation: float 4s ease-in-out infinite;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
+        }
+        .hub-card-icon { font-size: 1.4rem; line-height: 1; }
+        .hub-card-label {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1rem;
+            color: rgba(255,255,255,0.95);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+            letter-spacing: 0.02em;
+        }
+        .hub-card-progress-bar {
+            width: 70%;
+            height: 5px;
+            background: rgba(255,255,255,0.25);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .hub-card-progress-fill {
+            height: 100%;
+            background: rgba(255,255,255,0.85);
+            border-radius: var(--radius-full);
+            transition: width 0.8s ease;
+        }
+        .hub-card-stars {
+            position: absolute;
+            top: 8px; right: 8px;
+            background: rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.95);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 2px 7px;
+            border-radius: var(--radius-full);
+        }
 
-    .hub-card-icon {
-      font-size: 3rem;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
-    }
-    .hub-card-emoji {
-      font-size: 1.5rem;
-      opacity: 0.8;
-    }
-    .hub-card-stars {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 1rem;
-      color: rgba(255,255,255,0.9);
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    }
+        /* Stagger the mascot float animations */
+        .hub-card:nth-child(1) .hub-card-mascot { animation-delay: 0s; }
+        .hub-card:nth-child(2) .hub-card-mascot { animation-delay: 0.5s; }
+        .hub-card:nth-child(3) .hub-card-mascot { animation-delay: 1s; }
+        .hub-card:nth-child(4) .hub-card-mascot { animation-delay: 1.5s; }
+        .hub-card:nth-child(5) .hub-card-mascot { animation-delay: 0.8s; }
+        .hub-card:nth-child(6) .hub-card-mascot { animation-delay: 0.3s; }
 
-    @media (max-width: 600px) {
-      .hub-grid { grid-template-columns: repeat(2, 1fr); max-width: 360px; }
-      .hub-card { min-height: 120px; }
-      .hub-card-icon { font-size: 2.5rem; }
-      .hub-logo-letter { font-size: var(--text-3xl); }
-    }
-  `;
-  document.head.appendChild(style);
+        @media (max-width: 380px) {
+            .hub-grid { grid-template-columns: repeat(2, 1fr); max-width: 360px; }
+            .hub-card { min-height: 110px; }
+            .hub-card-mascot { font-size: 1.6rem; }
+            .hub-card-label { font-size: 0.9rem; }
+            .hub-logo-letter { font-size: 1.8rem; }
+        }
+        @media (max-height: 700px) {
+            .hub-screen { gap: var(--space-sm); }
+            .hub-logo-letter { font-size: 1.8rem; }
+            .hub-card { min-height: 100px; padding: var(--space-sm); }
+            .hub-card-mascot { font-size: 1.5rem; }
+        }
+    `;
+    document.head.appendChild(style);
 }

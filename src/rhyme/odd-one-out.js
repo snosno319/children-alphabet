@@ -7,6 +7,7 @@ import { getTwoFamilies } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction } from '../shared/audio.js';
 import { recordOddOneOut, addRhymeStars } from '../shared/storage.js';
 import { spawnConfetti } from '../shared/confetti.js';
+import { floatStars } from '../shared/feedback.js';
 
 let currentRound = 0;
 let score = 0;
@@ -76,6 +77,7 @@ function nextRound(app, navigate) {
                 card.classList.add('correct');
                 recordOddOneOut(true);
                 score++;
+                floatStars(card, 2);
                 setTimeout(() => speakInstruction('correct'), 700);
 
                 setTimeout(() => {

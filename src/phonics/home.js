@@ -91,6 +91,7 @@ export function injectHomeStyles() {
     .sub-home-title {
       font-size: 5rem;
       animation: bounce 2.5s ease-in-out infinite;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.15));
     }
 
     .sub-home-buttons {
@@ -99,36 +100,51 @@ export function injectHomeStyles() {
     }
 
     .activity-btn {
-      width: 110px;
-      height: 130px;
+      width: 130px;
+      padding: var(--space-xl) var(--space-md) var(--space-lg);
       border-radius: var(--radius-xl);
+      background: linear-gradient(145deg, color-mix(in srgb, var(--btn-color) 80%, white), var(--btn-color));
       background: var(--btn-color);
-      box-shadow: 0 6px 24px rgba(0,0,0,0.15), 0 3px 0 rgba(0,0,0,0.1);
+      box-shadow: 0 8px 0 color-mix(in srgb, var(--btn-color) 60%, black 40%), 0 10px 24px rgba(0,0,0,0.2);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: var(--space-sm);
       cursor: pointer;
-      transition: transform var(--transition-bounce);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
       animation: pop var(--transition-slow) backwards;
       border: none;
+      position: relative;
+      overflow: hidden;
     }
-    .activity-btn:active { transform: scale(0.92); }
+    .activity-btn::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 40%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      pointer-events: none;
+    }
+    .activity-btn:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 color-mix(in srgb, var(--btn-color) 60%, black 40%), 0 4px 12px rgba(0,0,0,0.15);
+    }
 
-    .activity-btn-icon { font-size: 2.5rem; }
+    .activity-btn-icon { font-size: 3rem; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2)); }
     .activity-btn-label {
       font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 0.85rem;
+      font-weight: 800;
+      font-size: 1rem;
       color: rgba(255,255,255,0.95);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.25);
     }
 
     @media (max-aspect-ratio: 1/1) {
       .sub-home-buttons { gap: var(--space-lg); }
-      .activity-btn { width: 95px; height: 110px; }
-      .activity-btn-icon { font-size: 2rem; }
+      .activity-btn { width: 110px; padding: var(--space-lg) var(--space-sm); }
+      .activity-btn-icon { font-size: 2.5rem; }
     }
   `;
     document.head.appendChild(style);

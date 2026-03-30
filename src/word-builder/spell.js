@@ -6,6 +6,7 @@ import { getRandomWords, ALL_LETTERS } from './data.js';
 import { speakWord, speakSpellOut, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction, playSnapSound } from '../shared/audio.js';
 import { markWordSpelled, addWordBuilderStars } from '../shared/storage.js';
 import { spawnConfetti } from '../shared/confetti.js';
+import { floatStars } from '../shared/feedback.js';
 
 let currentRound = [];
 let roundIndex = 0;
@@ -97,6 +98,7 @@ function handleLetterTap(btn, word) {
         playCorrectSound();
         document.getElementById('spell-feedback').innerHTML = '🎉';
         document.getElementById('spell-feedback').className = 'spell-feedback correct-fb';
+        floatStars(document.getElementById('spell-feedback'), 3);
         await speakSpellOut(word.word);
         await speakInstruction('correct');
         setTimeout(() => { roundIndex++; showSpellWord(); }, 1500);

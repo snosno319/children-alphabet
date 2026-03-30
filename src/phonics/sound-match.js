@@ -7,6 +7,7 @@ import { LETTERS } from '../alphabet/data.js';
 import { speakWord, speakLetterFull, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction, speak } from '../shared/audio.js';
 import { recordSoundMatch, addPhonicsStars } from '../shared/storage.js';
 import { spawnConfetti } from '../shared/confetti.js';
+import { floatStars } from '../shared/feedback.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
 
 let currentRound = 0;
@@ -95,6 +96,7 @@ function nextRound(app, navigate) {
         btn.classList.add('correct');
         recordSoundMatch(true);
         score++;
+        floatStars(btn, 2);
         setTimeout(() => speakInstruction('correct'), 700);
 
         // Pop animation
