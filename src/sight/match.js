@@ -37,8 +37,8 @@ export function renderMatch(app, navigate) {
 
   document.getElementById('match-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
-    navigate('home');
+    window.speechSynthesis?.cancel();
+    navigate('sight-home');
   });
 
   setTimeout(() => {

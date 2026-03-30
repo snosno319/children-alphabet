@@ -18,7 +18,9 @@ export function getProfiles() {
     try {
         const data = localStorage.getItem('ea_profiles');
         if (data) return JSON.parse(data);
-    } catch(e){}
+    } catch (e) {
+        // Profile data is not critical — return empty list on parse failure
+    }
     return []; // No profiles by default means we haven't asked yet
 }
 
@@ -35,7 +37,7 @@ function getProgress() {
         const data = localStorage.getItem(getStorageKey());
         if (data) return JSON.parse(data);
     } catch (e) {
-        // Ignore parse errors
+        console.warn('[storage] Failed to parse progress data; resetting to defaults.', e);
     }
     return createDefaultProgress();
 }
@@ -44,7 +46,7 @@ function saveProgress(progress) {
     try {
         localStorage.setItem(getStorageKey(), JSON.stringify(progress));
     } catch (e) {
-        // Ignore storage errors
+        console.warn('[storage] Failed to save progress data.', e);
     }
 }
 

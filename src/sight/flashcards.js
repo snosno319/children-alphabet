@@ -32,8 +32,8 @@ export function renderFlashcards(app, navigate) {
 
   document.getElementById('fc-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
-    navigate('home');
+    window.speechSynthesis?.cancel();
+    navigate('sight-home');
   });
 
   if (sessionWords.length === 0) return;

@@ -42,7 +42,7 @@ export function renderQuiz(app, navigate, props = {}) {
 
   document.getElementById('cvc-quiz-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
     if (window.isJourneyMode) exitJourney(navigate);
     else navigate('cvc-home');
   });

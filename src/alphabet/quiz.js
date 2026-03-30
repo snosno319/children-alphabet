@@ -47,9 +47,9 @@ export function renderQuiz(app, navigate, props = {}) {
 
   document.getElementById('quiz-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
     if (window.isJourneyMode) exitJourney(navigate);
-    else navigate('home');
+    else navigate('alphabet-home');
   });
 
   // Auto-speak on entry — give child time to absorb

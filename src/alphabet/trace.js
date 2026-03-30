@@ -86,7 +86,7 @@ export function renderTrace(app, navigate, props = {}) {
     if (window.isJourneyMode) {
       exitJourney(navigate);
     } else {
-      navigate('home');
+      navigate('alphabet-home');
     }
   });
   document.getElementById('trace-clear').addEventListener('click', () => { playPopSound(); clearCanvas(); });
@@ -201,7 +201,8 @@ function clearCanvas() {
 function checkTracing() {
   const l = LETTERS[currentIndex];
   // Simple verification: did they draw enough?
-  if (totalPixelsDrawn > 100) {
+  const MIN_TRACE_PIXELS = 100;
+  if (totalPixelsDrawn > MIN_TRACE_PIXELS) {
     handleSuccess(l);
   } else {
     const guide = document.getElementById('trace-guide');

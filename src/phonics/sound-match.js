@@ -11,17 +11,15 @@ import { advanceJourney, exitJourney } from '../shared/journey.js';
 
 let currentRound = 0;
 let score = 0;
-const TOTAL_ROUNDS = 8; // Keep TOTAL_ROUNDS for now, as it's used in progress bar and celebration logic
+const TOTAL_ROUNDS = 8;
 let questions = [];
 let answered = false;
 let localNavigate = null;
-let questionIndex = 0; // Added based on diff, but not fully integrated into the existing flow yet
 
 export function renderSoundMatch(app, navigate, props = {}) {
   localNavigate = navigate;
-  questionIndex = 0;
   score = 0;
-  currentRound = 0; // Reset currentRound as well
+  currentRound = 0;
   nextRound(app, navigate);
 }
 
@@ -74,9 +72,9 @@ function nextRound(app, navigate) {
   // Event Listeners
   document.getElementById('pmatch-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
     if (window.isJourneyMode) exitJourney(navigate);
-    else navigate('home'); // Changed from 'phonics-home' to 'home' based on typical navigation
+    else navigate('phonics-home');
   });
 
   document.getElementById('sm-hear').addEventListener('click', () => {
@@ -142,7 +140,7 @@ function showCelebration(app, navigate) {
 
   document.getElementById('sm-home').addEventListener('click', () => {
     playPopSound();
-    navigate('home');
+    navigate('phonics-home');
   });
 }
 

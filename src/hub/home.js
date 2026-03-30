@@ -100,7 +100,7 @@ export function renderHub(app, navigate) {
         <span class="hub-logo-letter" style="--d:6; color:#42A5F5">h</span>
       </div>
 
-      <!-- [NEW] Journey Banner -->
+      <!-- Journey Banner -->
       <button class="hub-journey-banner" id="hub-journey">
         <div class="journey-avatar">🧭</div>
         <div class="journey-text">
@@ -133,7 +133,7 @@ export function renderHub(app, navigate) {
   if (btnJourney) {
     btnJourney.addEventListener('click', () => {
       playPopSound();
-      window.speechSynthesis.cancel();
+      window.speechSynthesis?.cancel();
       // Animate compress
       btnJourney.style.transform = 'scale(0.95)';
       const state = getJourneyState();
@@ -146,7 +146,7 @@ export function renderHub(app, navigate) {
   if (btnParents) {
     btnParents.addEventListener('click', () => {
       playPopSound();
-      window.speechSynthesis.cancel();
+      window.speechSynthesis?.cancel();
       navigate('parents');
     });
   }
@@ -157,7 +157,7 @@ export function renderHub(app, navigate) {
       playPopSound();
       card.style.transform = 'scale(0.88)';
       setTimeout(() => {
-        window.speechSynthesis.cancel();
+        window.speechSynthesis?.cancel();
         const appId = card.dataset.app;
         navigate(`${appId}-home`);
       }, 150);

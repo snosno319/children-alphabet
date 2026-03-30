@@ -69,8 +69,8 @@ function nextRound(app, navigate) {
   // Handlers
   document.getElementById('ss-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
-    navigate('home');
+    window.speechSynthesis?.cancel();
+    navigate('phonics-home');
   });
 
   document.getElementById('ss-hear').addEventListener('click', (e) => {
@@ -144,7 +144,7 @@ function showCelebration(app, navigate) {
 
   document.getElementById('ss-home').addEventListener('click', () => {
     playPopSound();
-    navigate('home');
+    navigate('phonics-home');
   });
 }
 

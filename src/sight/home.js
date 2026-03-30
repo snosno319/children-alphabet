@@ -69,7 +69,7 @@ export function renderHome(app, navigate) {
   // Hub back button
   document.getElementById('sight-hub-back').addEventListener('click', () => {
     playPopSound();
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
     navigate('hub');
   });
 
@@ -78,7 +78,7 @@ export function renderHome(app, navigate) {
       playPopSound();
       btn.style.transform = 'scale(0.88)';
       setTimeout(() => {
-        window.speechSynthesis.cancel();
+        window.speechSynthesis?.cancel();
         navigate(btn.dataset.screen);
       }, 150);
     });

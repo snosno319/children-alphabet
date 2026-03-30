@@ -41,8 +41,8 @@ export function renderStories(app, navigate) {
             hideStory();
         } else {
             playPopSound();
-            window.speechSynthesis.cancel();
-            navigate('home');
+            window.speechSynthesis?.cancel();
+            navigate('sight-home');
         }
     });
 
@@ -57,7 +57,7 @@ export function renderStories(app, navigate) {
 }
 
 function showStory(index) {
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
     currentStory = index;
     currentSentence = 0;
     const story = STORIES[index];
@@ -143,7 +143,7 @@ function renderSentence() {
 function hideStory() {
     document.getElementById('story-overlay').style.display = 'none';
     currentStory = -1;
-    window.speechSynthesis.cancel();
+    window.speechSynthesis?.cancel();
 }
 
 export function injectStoriesStyles() {
