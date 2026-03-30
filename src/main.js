@@ -130,13 +130,11 @@ function renderScreen(screen, props = {}) {
 
 // Initial load
 (async () => {
-    console.log("APP BOOT: START");
     // 1. Initialize Subscription Service
     try {
         await SubscriptionService.initialize();
-        console.log("APP BOOT: Subscription initialized");
     } catch(e) {
-        console.error("APP BOOT: Subscription failed", e);
+        console.error('Subscription initialization failed', e);
     }
 
     // 2. Check Trial Status
@@ -151,10 +149,7 @@ function renderScreen(screen, props = {}) {
     const isExpired = daysSinceLaunch > TRIAL_DAYS;
 
     // 3. Preload & Navigate
-    console.log("APP BOOT: Preloading voices");
     preloadVoices();
-
-    console.log(`APP BOOT: Checking expiration... expired: ${isExpired}, isPro: ${SubscriptionService.isPro}`);
     if (isExpired && !SubscriptionService.isPro) {
         injectPaywallStyles();
         // Render Paywall directly into app (blocking)
