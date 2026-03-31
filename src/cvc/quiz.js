@@ -6,6 +6,7 @@
 import { getAllWords } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playCelebrationSound, playPopSound, speakInstruction, speak } from '../shared/audio.js';
 import { recordCvcQuizAnswer, addCvcStars, recordCvcAccuracy } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { spawnConfetti, spawnBigCelebration } from '../shared/confetti.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
 import { floatStars } from '../shared/feedback.js';
@@ -200,6 +201,7 @@ function showResults() {
 
   playCelebrationSound();
   if (percent >= 60) spawnBigCelebration(); else spawnConfetti();
+  checkAndAwardBadges(localNavigate, { quizAce: percent === 100 });
 
   content.innerHTML = `
     <div class="quiz-results">

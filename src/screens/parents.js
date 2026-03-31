@@ -22,7 +22,9 @@ import {
     getPhonicsStats,
     getRhymeStats,
     resetProgress,
+    getEarnedBadges,
 } from '../shared/storage.js';
+import { BADGE_DEFS } from '../shared/badges.js';
 import { playPopSound, playWrongSound, playCorrectSound } from '../shared/audio.js';
 
 let unlocked = false;
@@ -216,12 +218,20 @@ function renderDashboardContent(container) {
             ${renderMasteredStruggling(cvcMetrics)}
         </div>
 
+        <!-- Badges -->
+        ${renderBadgesSection(localNavigate)}
+
         <!-- Reset -->
         <div class="dash-section dash-reset-section">
             <button class="dash-reset-btn" id="dash-reset">🗑 Reset Progress for ${me.name}</button>
             <div class="dash-reset-warning">This cannot be undone.</div>
         </div>
     `;
+
+    document.getElementById('dash-view-badges').addEventListener('click', () => {
+        playPopSound();
+        localNavigate('badges');
+    });
 
     document.getElementById('dash-reset').addEventListener('click', () => {
         const confirmed = window.confirm(`Reset all progress for ${me.name}? This cannot be undone.`);
@@ -271,6 +281,29 @@ function buildMetrics(scoreMap) {
         mastered:   list.filter(m => m.ratio >= 0.8 && m.attempts >= 2).slice(0, 5),
         struggling: list.filter(m => m.ratio <= 0.5 && m.attempts >= 2).sort((a, b) => a.ratio - b.ratio).slice(0, 5),
     };
+}
+
+function renderBadgesSection(navigate) {
+    const earned = getEarnedBadges();
+    const total  = BADGE_DEFS.length;
+    const recent = earned.slice(-5).reverse();
+    const recentDefs = recent.map(id => BADGE_DEFS.find(b => b.id === id)).filter(Boolean);
+
+    return `
+        <div class="dash-section">
+            <h3 class="dash-section-title">Badges &amp; Stickers</h3>
+            <div class="dash-badges-row">
+                <div class="dash-badges-count">🏆 ${earned.length} / ${total} earned</div>
+                ${recentDefs.length > 0
+                    ? `<div class="dash-badges-recent">${recentDefs.map(b =>
+                        `<span class="dash-badge-icon" style="background:${b.color}" title="${b.label}">${b.emoji}</span>`
+                    ).join('')}</div>`
+                    : `<div class="dash-badges-empty">No badges yet — keep playing!</div>`
+                }
+                <button class="dash-badges-view-btn" id="dash-view-badges">View All</button>
+            </div>
+        </div>
+    `;
 }
 
 function completionRow(label, completionPct, accPct) {
@@ -487,6 +520,31 @@ export function injectParentsStyles() {
       .dash-empty-state { color: #94A3B8; font-size: 0.95rem; text-align: center; padding: var(--space-lg) 0; }
 
       /* ── Reset ── */
+      /* ── Badges section ── */
+      .dash-badges-row {
+        display: flex; align-items: center; flex-wrap: wrap;
+        gap: var(--space-md);
+      }
+      .dash-badges-count {
+        font-family: var(--font-display); font-size: 1.1rem;
+        font-weight: 800; color: #7C3AED;
+      }
+      .dash-badges-recent { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+      .dash-badge-icon {
+        width: 40px; height: 40px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      }
+      .dash-badges-empty { color: #94A3B8; font-size: 0.9rem; flex: 1; }
+      .dash-badges-view-btn {
+        background: linear-gradient(135deg, #A78BFA, #7C3AED);
+        color: #fff; border: none; cursor: pointer;
+        font-family: var(--font-display); font-size: 0.9rem; font-weight: 700;
+        padding: 8px 18px; border-radius: 20px;
+        box-shadow: 0 3px 10px rgba(124,58,237,0.35);
+        white-space: nowrap;
+      }
+
       .dash-reset-section { text-align: center; }
       .dash-reset-btn {
         background: #FEF2F2; color: #DC2626; border: 2px solid #FECACA;

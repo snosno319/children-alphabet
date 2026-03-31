@@ -6,6 +6,7 @@
 import { SIGHT_WORDS } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playCelebrationSound, playPopSound, speakInstruction, speak } from '../shared/audio.js';
 import { recordMatchAnswer, addSightStars } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { spawnConfetti } from '../shared/confetti.js';
 import { floatStars } from '../shared/feedback.js';
 
@@ -13,9 +14,11 @@ let questionIndex = 0;
 let score = 0;
 let questions = [];
 let answered = false;
+let localNavigate = null;
 const TOTAL_QUESTIONS = 8;
 
 export function renderMatch(app, navigate) {
+  localNavigate = navigate;
   questionIndex = 0;
   score = 0;
   answered = false;
@@ -152,6 +155,7 @@ function showResults() {
 
   playCelebrationSound();
   spawnConfetti();
+  checkAndAwardBadges(localNavigate);
 
   content.innerHTML = `
     <div class="match-results">

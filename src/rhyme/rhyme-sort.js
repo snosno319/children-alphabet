@@ -5,6 +5,7 @@
 import { getTwoFamilies, RHYME_FAMILIES } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction, playSwipeSound } from '../shared/audio.js';
 import { recordRhymeSort, addRhymeStars } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { spawnConfetti } from '../shared/confetti.js';
 
 let currentRound = 0;
@@ -121,6 +122,7 @@ function showCelebration(app, navigate) {
     playCelebrationSound();
     spawnConfetti();
     addRhymeStars(4);
+    checkAndAwardBadges(navigate);
 
     app.innerHTML = `
     <div class="screen celebration-screen">

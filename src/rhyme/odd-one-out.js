@@ -6,6 +6,7 @@
 import { getTwoFamilies } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction } from '../shared/audio.js';
 import { recordOddOneOut, addRhymeStars } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { spawnConfetti } from '../shared/confetti.js';
 import { floatStars } from '../shared/feedback.js';
 
@@ -99,6 +100,7 @@ function showCelebration(app, navigate) {
     playCelebrationSound();
     spawnConfetti();
     addRhymeStars(5);
+    checkAndAwardBadges(navigate);
 
     app.innerHTML = `
     <div class="screen celebration-screen">

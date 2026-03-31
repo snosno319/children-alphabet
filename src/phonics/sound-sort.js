@@ -5,6 +5,7 @@
 import { getWordsForSound, ALL_SOUNDS } from './data.js';
 import { speakWord, speakLetterFull, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction, playSwipeSound } from '../shared/audio.js';
 import { recordSoundSort, addPhonicsStars } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { spawnConfetti } from '../shared/confetti.js';
 
 let currentRound = 0;
@@ -125,6 +126,7 @@ function showCelebration(app, navigate) {
   playCelebrationSound();
   spawnConfetti();
   addPhonicsStars(4);
+  checkAndAwardBadges(navigate);
 
   app.innerHTML = `
     <div class="screen celebration-screen">

@@ -6,11 +6,14 @@
 import { STORIES } from './data.js';
 import { speakWord, speakSentence, playPopSound, speakInstruction, playTinkle, playCelebrationSound } from '../shared/audio.js';
 import { markStoryRead, addSightStars } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 
 let currentStory = -1;
 let currentSentence = 0;
+let localNavigate = null;
 
 export function renderStories(app, navigate) {
+    localNavigate = navigate;
     currentStory = -1;
     currentSentence = 0;
 
@@ -66,6 +69,7 @@ function showStory(index) {
 
     markStoryRead(index);
     addSightStars(2);
+    checkAndAwardBadges(localNavigate);
 
     renderSentence();
 }

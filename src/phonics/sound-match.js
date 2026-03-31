@@ -6,6 +6,7 @@ import { getWordsForSound, getDistractorSounds, ALL_SOUNDS } from './data.js';
 import { LETTERS } from '../alphabet/data.js';
 import { speakWord, speakLetterFull, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction, speak } from '../shared/audio.js';
 import { recordSoundMatch, addPhonicsStars } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { spawnConfetti } from '../shared/confetti.js';
 import { floatStars } from '../shared/feedback.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
@@ -123,6 +124,7 @@ function showCelebration(app, navigate) {
   playCelebrationSound();
   spawnConfetti();
   addPhonicsStars(3);
+  checkAndAwardBadges(navigate);
 
   app.innerHTML = `
     <div class="screen celebration-screen">

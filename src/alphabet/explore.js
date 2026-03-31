@@ -5,6 +5,7 @@
 import { LETTERS } from './data.js';
 import { speakLetter, speakPhonetic, playPopSound, speakInstruction, speakFunFact, playTinkle, playAudio, slug } from '../shared/audio.js';
 import { markExplored, addAlphabetStars } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
 
 let currentIndex = 0;
@@ -240,6 +241,7 @@ async function showDetail(index) {
 
   markExplored(l.letter);
   addAlphabetStars(1);
+  checkAndAwardBadges(localNavigate);
 
   // Journey Mode UI injections
   if (window.isJourneyMode) {

@@ -6,6 +6,7 @@
 import { LETTERS } from './data.js';
 import { speakLetter, playCorrectSound, playCelebrationSound, playPopSound, speakInstruction, speak } from '../shared/audio.js';
 import { markTraced, addAlphabetStars } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { advanceJourney, exitJourney, getJourneyState } from '../shared/journey.js';
 
 let currentIndex = 0;
@@ -247,6 +248,7 @@ function handleSuccess(l) {
     speakInstruction('trace_done');
     markTraced(l.letter);
     addAlphabetStars(2);
+    checkAndAwardBadges(localNavigate);
     showTraceCelebration(l.letter.toLowerCase(), () => {
       // If Journey mode, advance to next step immediately
       if (window.isJourneyMode) {
