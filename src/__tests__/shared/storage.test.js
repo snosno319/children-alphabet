@@ -62,6 +62,17 @@ import {
     recordRhymeSort,
     recordOddOneOut,
     getRhymeStats,
+    // Numbers
+    markNumberExplored,
+    isNumberExplored,
+    recordNumbersQuizResult,
+    getNumbersProgress,
+    getNumbersCompletionPercent,
+    // Memory
+    saveMemoryBest,
+    getMemoryBest,
+    // Case Match
+    recordCaseMatchResult,
 } from '../../shared/storage.js';
 
 beforeEach(() => {
@@ -142,7 +153,24 @@ describe('getAllProgress()', () => {
         expect(p).toHaveProperty('wordBuilder');
         expect(p).toHaveProperty('phonics');
         expect(p).toHaveProperty('rhyme');
+        expect(p).toHaveProperty('numbers');
         expect(p).toHaveProperty('global');
+    });
+
+    it('numbers section starts with empty arrays and zero counts', () => {
+        const { numbers } = getAllProgress();
+        expect(numbers.exploredNumbers).toEqual([]);
+        expect(numbers.quizCorrect).toBe(0);
+        expect(numbers.quizTotal).toBe(0);
+        expect(numbers.stars).toBe(0);
+    });
+
+    it('alphabet section includes memory and case-match fields', () => {
+        const { alphabet } = getAllProgress();
+        expect(alphabet.memoryBestEasy).toBeNull();
+        expect(alphabet.memoryBestHard).toBeNull();
+        expect(alphabet.caseMatchCorrect).toBe(0);
+        expect(alphabet.caseMatchTotal).toBe(0);
     });
 
     it('alphabet starts with empty arrays and zero counts', () => {
@@ -563,14 +591,22 @@ describe('getTotalStars()', () => {
         expect(getTotalStars()).toBe(0);
     });
 
-    it('sums stars across all 6 sub-apps', () => {
+    it('sums stars across all 7 sub-apps including numbers', () => {
         addAlphabetStars(1);
         addCvcStars(2);
         addSightStars(3);
         addWordBuilderStars(4);
         addPhonicsStars(5);
         addRhymeStars(6);
-        expect(getTotalStars()).toBe(21);
+        recordNumbersQuizResult(5, 5); // earns 3 stars
+        expect(getTotalStars()).toBe(24);
+    });
+
+    it('does not count NaN when a sub-app has no stars', () => {
+        addAlphabetStars(5);
+        const total = getTotalStars();
+        expect(Number.isNaN(total)).toBe(false);
+        expect(total).toBe(5);
     });
 });
 
@@ -582,5 +618,355 @@ describe('getSubAppStars()', () => {
 
     it('returns 0 for a sub-app with no stars', () => {
         expect(getSubAppStars('sight')).toBe(0);
+    });
+
+    it('returns numbers stars after quiz completion', () => {
+        recordNumbersQuizResult(5, 5); // perfect score = 3 stars
+        expect(getSubAppStars('numbers')).toBe(3);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Numbers
+// ---------------------------------------------------------------------------
+
+describe('markNumberExplored()', () => {
+    it('marks a number as explored', () => {
+        markNumberExplored(1);
+        expect(getNumbersProgress().exploredNumbers).toContain(1);
+    });
+
+    it('does not add duplicate entries', () => {
+        markNumberExplored(3);
+        markNumberExplored(3);
+        expect(getNumbersProgress().exploredNumbers).toHaveLength(1);
+    });
+
+    it('tracks multiple different numbers', () => {
+        markNumberExplored(1);
+        markNumberExplored(2);
+        markNumberExplored(5);
+        expect(getNumbersProgress().exploredNumbers).toHaveLength(3);
+    });
+});
+
+describe('isNumberExplored()', () => {
+    it('returns false before exploring', () => {
+        expect(isNumberExplored(7)).toBe(false);
+    });
+
+    it('returns true after exploring', () => {
+        markNumberExplored(7);
+        expect(isNumberExplored(7)).toBe(true);
+    });
+
+    it('is specific to the number — exploring 1 does not mark 2 as explored', () => {
+        markNumberExplored(1);
+        expect(isNumberExplored(2)).toBe(false);
+    });
+});
+
+describe('recordNumbersQuizResult()', () => {
+    it('increments quizCorrect and quizTotal', () => {
+        recordNumbersQuizResult(4, 5);
+        const p = getNumbersProgress();
+        expect(p.quizCorrect).toBe(4);
+        expect(p.quizTotal).toBe(5);
+    });
+
+    it('accumulates across multiple quiz attempts', () => {
+        recordNumbersQuizResult(3, 5);
+        recordNumbersQuizResult(5, 5);
+        const p = getNumbersProgress();
+        expect(p.quizCorrect).toBe(8);
+        expect(p.quizTotal).toBe(10);
+    });
+
+    it('awards 3 stars for a perfect score', () => {
+        const stars = recordNumbersQuizResult(5, 5);
+        expect(stars).toBe(3);
+    });
+
+    it('awards 2 stars for one wrong answer', () => {
+        const stars = recordNumbersQuizResult(4, 5);
+        expect(stars).toBe(2);
+    });
+
+    it('awards 1 star for meeting the 60% threshold', () => {
+        const stars = recordNumbersQuizResult(3, 5);
+        expect(stars).toBe(1);
+    });
+
+    it('awards 0 stars for below 60%', () => {
+        const stars = recordNumbersQuizResult(2, 5);
+        expect(stars).toBe(0);
+    });
+
+    it('accumulates stars in storage', () => {
+        recordNumbersQuizResult(5, 5); // 3 stars
+        recordNumbersQuizResult(3, 5); // 1 star
+        expect(getNumbersProgress().stars).toBe(4);
+    });
+
+    it('returns a number, not NaN', () => {
+        const stars = recordNumbersQuizResult(0, 5);
+        expect(Number.isNaN(stars)).toBe(false);
+    });
+});
+
+describe('getNumbersCompletionPercent()', () => {
+    it('returns 0% with no explored numbers', () => {
+        expect(getNumbersCompletionPercent()).toBe(0);
+    });
+
+    it('returns 50% when 5 of 10 numbers are explored', () => {
+        [1, 2, 3, 4, 5].forEach(n => markNumberExplored(n));
+        expect(getNumbersCompletionPercent()).toBe(50);
+    });
+
+    it('returns 100% when all 10 numbers are explored', () => {
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(n => markNumberExplored(n));
+        expect(getNumbersCompletionPercent()).toBe(100);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Memory Game
+// ---------------------------------------------------------------------------
+
+describe('getMemoryBest()', () => {
+    it('returns null before any game is played', () => {
+        expect(getMemoryBest('easy')).toBeNull();
+        expect(getMemoryBest('hard')).toBeNull();
+    });
+});
+
+describe('saveMemoryBest()', () => {
+    it('saves the first score as the best', () => {
+        saveMemoryBest('easy', 10);
+        expect(getMemoryBest('easy')).toBe(10);
+    });
+
+    it('saves a better (lower) score', () => {
+        saveMemoryBest('easy', 10);
+        saveMemoryBest('easy', 8);
+        expect(getMemoryBest('easy')).toBe(8);
+    });
+
+    it('does not overwrite with a worse (higher) score', () => {
+        saveMemoryBest('easy', 8);
+        saveMemoryBest('easy', 15);
+        expect(getMemoryBest('easy')).toBe(8);
+    });
+
+    it('tracks easy and hard separately', () => {
+        saveMemoryBest('easy', 6);
+        saveMemoryBest('hard', 20);
+        expect(getMemoryBest('easy')).toBe(6);
+        expect(getMemoryBest('hard')).toBe(20);
+    });
+
+    it('improving hard score does not affect easy score', () => {
+        saveMemoryBest('easy', 6);
+        saveMemoryBest('hard', 20);
+        saveMemoryBest('hard', 14);
+        expect(getMemoryBest('easy')).toBe(6);
+        expect(getMemoryBest('hard')).toBe(14);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Case Match Quiz
+// ---------------------------------------------------------------------------
+
+describe('recordCaseMatchResult()', () => {
+    it('increments caseMatchCorrect and caseMatchTotal', () => {
+        recordCaseMatchResult(7, 10);
+        const p = getAlphabetProgress();
+        expect(p.caseMatchCorrect).toBe(7);
+        expect(p.caseMatchTotal).toBe(10);
+    });
+
+    it('accumulates across multiple sessions', () => {
+        recordCaseMatchResult(6, 10);
+        recordCaseMatchResult(9, 10);
+        const p = getAlphabetProgress();
+        expect(p.caseMatchCorrect).toBe(15);
+        expect(p.caseMatchTotal).toBe(20);
+    });
+
+    it('awards 3 stars for a perfect score', () => {
+        expect(recordCaseMatchResult(10, 10)).toBe(3);
+    });
+
+    it('awards 2 stars for meeting the 60% threshold', () => {
+        expect(recordCaseMatchResult(6, 10)).toBe(2);
+    });
+
+    it('awards 1 star for meeting the 30% threshold', () => {
+        expect(recordCaseMatchResult(3, 10)).toBe(1);
+    });
+
+    it('awards 0 stars below the 30% threshold', () => {
+        expect(recordCaseMatchResult(2, 10)).toBe(0);
+    });
+
+    it('adds stars to the alphabet stars total', () => {
+        recordCaseMatchResult(10, 10); // 3 stars
+        expect(getAlphabetProgress().stars).toBe(3);
+    });
+
+    it('returns a number, not NaN', () => {
+        const stars = recordCaseMatchResult(0, 10);
+        expect(Number.isNaN(stars)).toBe(false);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Schema Migration
+// ---------------------------------------------------------------------------
+
+describe('schema migration (migrateProgress)', () => {
+    it('a profile missing the numbers section does not crash and returns defaults', () => {
+        // Store a pre-numbers-module profile (missing the `numbers` key)
+        const oldProgress = {
+            alphabet: { exploredLetters: ['A'], tracedLetters: [], quizCorrect: 0, quizTotal: 0, letterScores: {}, stars: 2 },
+            cvc: { exploredFamilies: [], builtWords: [], quizCorrect: 0, quizTotal: 0, wordScores: {}, stars: 0 },
+            sight: { learnedWords: [], matchCorrect: 0, matchTotal: 0, storiesRead: [], stars: 0 },
+            wordBuilder: { spelledWords: [], matchedWords: [], blendedWords: [], dailyCompleted: [], wordScores: {}, streak: 0, lastDaily: null, stars: 0 },
+            phonics: { soundMatchCorrect: 0, soundMatchTotal: 0, soundSortCorrect: 0, soundSortTotal: 0, endSoundCorrect: 0, endSoundTotal: 0, stars: 0 },
+            rhyme: { rhymeMatchCorrect: 0, rhymeMatchTotal: 0, rhymeSortCorrect: 0, rhymeSortTotal: 0, oddOneOutCorrect: 0, oddOneOutTotal: 0, stars: 0 },
+            global: { lastActivity: null, earnedBadges: [], badgeSeenAt: {} },
+            // numbers section intentionally absent
+        };
+        localStorage.setItem('english-adventure-progress-default', JSON.stringify(oldProgress));
+
+        // Should not throw, should return migrated progress with numbers defaults
+        const p = getAllProgress();
+        expect(p.numbers).toBeDefined();
+        expect(p.numbers.exploredNumbers).toEqual([]);
+        expect(p.numbers.stars).toBe(0);
+    });
+
+    it('a profile missing memoryBestEasy returns null from getMemoryBest', () => {
+        const oldProgress = {
+            alphabet: { exploredLetters: [], tracedLetters: [], quizCorrect: 0, quizTotal: 0, letterScores: {}, stars: 0 },
+            // memoryBestEasy / memoryBestHard intentionally absent
+            cvc: { exploredFamilies: [], builtWords: [], quizCorrect: 0, quizTotal: 0, wordScores: {}, stars: 0 },
+            sight: { learnedWords: [], matchCorrect: 0, matchTotal: 0, storiesRead: [], stars: 0 },
+            wordBuilder: { spelledWords: [], matchedWords: [], blendedWords: [], dailyCompleted: [], wordScores: {}, streak: 0, lastDaily: null, stars: 0 },
+            phonics: { soundMatchCorrect: 0, soundMatchTotal: 0, soundSortCorrect: 0, soundSortTotal: 0, endSoundCorrect: 0, endSoundTotal: 0, stars: 0 },
+            rhyme: { rhymeMatchCorrect: 0, rhymeMatchTotal: 0, rhymeSortCorrect: 0, rhymeSortTotal: 0, oddOneOutCorrect: 0, oddOneOutTotal: 0, stars: 0 },
+            numbers: { exploredNumbers: [], quizCorrect: 0, quizTotal: 0, stars: 0 },
+            global: { lastActivity: null, earnedBadges: [], badgeSeenAt: {} },
+        };
+        localStorage.setItem('english-adventure-progress-default', JSON.stringify(oldProgress));
+
+        expect(getMemoryBest('easy')).toBeNull();
+        expect(getMemoryBest('hard')).toBeNull();
+    });
+
+    it('a profile missing caseMatchCorrect returns 0, not undefined', () => {
+        const oldProgress = {
+            alphabet: { exploredLetters: [], tracedLetters: [], quizCorrect: 0, quizTotal: 0, letterScores: {}, stars: 0 },
+            // caseMatchCorrect / caseMatchTotal intentionally absent
+            cvc: { exploredFamilies: [], builtWords: [], quizCorrect: 0, quizTotal: 0, wordScores: {}, stars: 0 },
+            sight: { learnedWords: [], matchCorrect: 0, matchTotal: 0, storiesRead: [], stars: 0 },
+            wordBuilder: { spelledWords: [], matchedWords: [], blendedWords: [], dailyCompleted: [], wordScores: {}, streak: 0, lastDaily: null, stars: 0 },
+            phonics: { soundMatchCorrect: 0, soundMatchTotal: 0, soundSortCorrect: 0, soundSortTotal: 0, endSoundCorrect: 0, endSoundTotal: 0, stars: 0 },
+            rhyme: { rhymeMatchCorrect: 0, rhymeMatchTotal: 0, rhymeSortCorrect: 0, rhymeSortTotal: 0, oddOneOutCorrect: 0, oddOneOutTotal: 0, stars: 0 },
+            numbers: { exploredNumbers: [], quizCorrect: 0, quizTotal: 0, stars: 0 },
+            global: { lastActivity: null, earnedBadges: [], badgeSeenAt: {} },
+        };
+        localStorage.setItem('english-adventure-progress-default', JSON.stringify(oldProgress));
+
+        const p = getAllProgress();
+        expect(p.alphabet.caseMatchCorrect).toBe(0);
+        expect(p.alphabet.caseMatchTotal).toBe(0);
+    });
+
+    it('existing progress is preserved after migration', () => {
+        const oldProgress = {
+            alphabet: { exploredLetters: ['A', 'B'], tracedLetters: ['A'], quizCorrect: 5, quizTotal: 8, letterScores: {}, stars: 3 },
+            cvc: { exploredFamilies: [], builtWords: [], quizCorrect: 0, quizTotal: 0, wordScores: {}, stars: 0 },
+            sight: { learnedWords: [], matchCorrect: 0, matchTotal: 0, storiesRead: [], stars: 0 },
+            wordBuilder: { spelledWords: [], matchedWords: [], blendedWords: [], dailyCompleted: [], wordScores: {}, streak: 0, lastDaily: null, stars: 0 },
+            phonics: { soundMatchCorrect: 0, soundMatchTotal: 0, soundSortCorrect: 0, soundSortTotal: 0, endSoundCorrect: 0, endSoundTotal: 0, stars: 0 },
+            rhyme: { rhymeMatchCorrect: 0, rhymeMatchTotal: 0, rhymeSortCorrect: 0, rhymeSortTotal: 0, oddOneOutCorrect: 0, oddOneOutTotal: 0, stars: 0 },
+            global: { lastActivity: null, earnedBadges: [], badgeSeenAt: {} },
+        };
+        localStorage.setItem('english-adventure-progress-default', JSON.stringify(oldProgress));
+
+        const p = getAllProgress();
+        // Existing data must be preserved
+        expect(p.alphabet.exploredLetters).toEqual(['A', 'B']);
+        expect(p.alphabet.tracedLetters).toEqual(['A']);
+        expect(p.alphabet.quizCorrect).toBe(5);
+        expect(p.alphabet.stars).toBe(3);
+        // Migrated field must be filled with default
+        expect(p.numbers.exploredNumbers).toEqual([]);
+    });
+
+    it('getTotalStars() does not produce NaN for old profiles missing numbers', () => {
+        const oldProgress = {
+            alphabet: { exploredLetters: [], tracedLetters: [], quizCorrect: 0, quizTotal: 0, letterScores: {}, stars: 5 },
+            cvc: { exploredFamilies: [], builtWords: [], quizCorrect: 0, quizTotal: 0, wordScores: {}, stars: 0 },
+            sight: { learnedWords: [], matchCorrect: 0, matchTotal: 0, storiesRead: [], stars: 0 },
+            wordBuilder: { spelledWords: [], matchedWords: [], blendedWords: [], dailyCompleted: [], wordScores: {}, streak: 0, lastDaily: null, stars: 0 },
+            phonics: { soundMatchCorrect: 0, soundMatchTotal: 0, soundSortCorrect: 0, soundSortTotal: 0, endSoundCorrect: 0, endSoundTotal: 0, stars: 0 },
+            rhyme: { rhymeMatchCorrect: 0, rhymeMatchTotal: 0, rhymeSortCorrect: 0, rhymeSortTotal: 0, oddOneOutCorrect: 0, oddOneOutTotal: 0, stars: 0 },
+            global: { lastActivity: null, earnedBadges: [], badgeSeenAt: {} },
+            // numbers section intentionally absent
+        };
+        localStorage.setItem('english-adventure-progress-default', JSON.stringify(oldProgress));
+
+        const total = getTotalStars();
+        expect(Number.isNaN(total)).toBe(false);
+        expect(total).toBe(5);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Stats return shapes (contract tests — catch return shape mismatches)
+// ---------------------------------------------------------------------------
+
+describe('getPhonicsStats() return shape', () => {
+    it('returns totalCorrect and totalAttempts keys', () => {
+        recordSoundMatch(true);
+        recordSoundSort(false);
+        const stats = getPhonicsStats();
+        expect(stats).toHaveProperty('totalCorrect');
+        expect(stats).toHaveProperty('totalAttempts');
+    });
+
+    it('does not return sub-object shape like soundMatch.correct', () => {
+        const stats = getPhonicsStats();
+        // If hub code accessed stats.soundMatch it would be undefined, not an object
+        expect(stats.soundMatch).toBeUndefined();
+    });
+
+    it('totalAttempts is never NaN', () => {
+        const stats = getPhonicsStats();
+        expect(Number.isNaN(stats.totalAttempts)).toBe(false);
+    });
+});
+
+describe('getRhymeStats() return shape', () => {
+    it('returns totalCorrect and totalAttempts keys', () => {
+        recordRhymeMatch(true);
+        recordRhymeSort(false);
+        const stats = getRhymeStats();
+        expect(stats).toHaveProperty('totalCorrect');
+        expect(stats).toHaveProperty('totalAttempts');
+    });
+
+    it('does not return sub-object shape like rhymeMatch.correct', () => {
+        const stats = getRhymeStats();
+        expect(stats.rhymeMatch).toBeUndefined();
+    });
+
+    it('totalAttempts is never NaN', () => {
+        const stats = getRhymeStats();
+        expect(Number.isNaN(stats.totalAttempts)).toBe(false);
     });
 });
