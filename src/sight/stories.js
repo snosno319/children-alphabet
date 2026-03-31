@@ -10,12 +10,14 @@ import { checkAndAwardBadges } from '../shared/badges.js';
 
 let currentStory = -1;
 let currentSentence = 0;
+let isAutoRead = false;
 let localNavigate = null;
 
 export function renderStories(app, navigate) {
     localNavigate = navigate;
     currentStory = -1;
     currentSentence = 0;
+    isAutoRead = false;
 
     app.innerHTML = `
     <div class="screen stories-screen" id="stories">
@@ -63,6 +65,7 @@ function showStory(index) {
     window.speechSynthesis?.cancel();
     currentStory = index;
     currentSentence = 0;
+    isAutoRead = false;
     const story = STORIES[index];
     const overlay = document.getElementById('story-overlay');
     overlay.style.display = 'flex';
@@ -74,32 +77,79 @@ function showStory(index) {
     renderSentence();
 }
 
+// Build char-offset map for word highlighting
+function buildWordTokens(text) {
+    const tokens = [];
+    let pos = 0;
+    text.split(' ').forEach((token, i) => {
+        const clean = token.replace(/[.,!?]/g, '');
+        tokens.push({ token, clean, charStart: pos, idx: i });
+        pos += token.length + 1;
+    });
+    return tokens;
+}
+
+// Speak with per-word boundary highlighting
+function speakWithHighlight(text, onEnd) {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+        onEnd && onEnd();
+        return;
+    }
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 0.62;
+    utt.pitch = 1.12;
+    utt.onboundary = (e) => {
+        if (e.name !== 'word') return;
+        document.querySelectorAll('.story-word').forEach(el => el.classList.remove('speaking'));
+        const els = document.querySelectorAll('.story-word[data-char-start]');
+        for (const el of els) {
+            const start = parseInt(el.dataset.charStart);
+            const end = start + el.dataset.wordLen;
+            if (start <= e.charIndex && e.charIndex < end) {
+                el.classList.add('speaking');
+                break;
+            }
+        }
+    };
+    utt.onend = () => {
+        document.querySelectorAll('.story-word').forEach(el => el.classList.remove('speaking'));
+        onEnd && onEnd();
+    };
+    window.speechSynthesis.speak(utt);
+}
+
 function renderSentence() {
     const story = STORIES[currentStory];
     const reader = document.getElementById('story-reader');
     const s = story.sentences[currentSentence];
+    const tokens = buildWordTokens(s.text);
+    const isLast = currentSentence >= story.sentences.length - 1;
 
-    // Build highlighted sentence
-    const words = s.text.split(' ');
-    const highlighted = words.map(w => {
-        const clean = w.replace(/[.,!?]/g, '');
-        const isHighlight = s.highlights.some(h => h.toLowerCase() === clean.toLowerCase());
-        if (isHighlight) {
-            return `<button class="story-word highlight" data-word="${clean}">${w}</button>`;
+    const highlighted = tokens.map(({ token, clean, charStart }) => {
+        const isHL = s.highlights.some(h => h.toLowerCase() === clean.toLowerCase());
+        const attrs = `data-char-start="${charStart}" data-word-len="${token.length}" data-word="${clean}"`;
+        if (isHL) {
+            return `<button class="story-word highlight" ${attrs}>${token}</button>`;
         }
-        return `<span class="story-word">${w}</span>`;
+        return `<span class="story-word" ${attrs}>${token}</span>`;
     }).join(' ');
 
     reader.innerHTML = `
     <div class="story-card" style="animation: celebratePop 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards">
-      <div class="story-title-emoji">${story.title}</div>
+      <div class="story-card-top">
+        <div class="story-title-emoji">${story.title}</div>
+        <button class="story-autoread-btn ${isAutoRead ? 'active' : ''}" id="story-autoread" title="Read to me">
+          ${isAutoRead ? '⏹ Stop' : '🔊 Read to me'}
+        </button>
+      </div>
       <div class="story-sentence" id="story-sentence">${highlighted}</div>
       <div class="story-controls">
         <button class="story-play-btn" id="story-play">🔊</button>
       </div>
       <div class="story-nav">
         ${currentSentence > 0 ? '<button class="story-nav-btn" id="story-prev">◀</button>' : '<div></div>'}
-        ${currentSentence < story.sentences.length - 1
+        ${!isLast
             ? '<button class="story-nav-btn" id="story-next">▶</button>'
             : '<button class="story-done-btn" id="story-done">🎉</button>'
         }
@@ -107,8 +157,49 @@ function renderSentence() {
     </div>
   `;
 
-    // Auto-read sentence
-    setTimeout(() => speakSentence(s.text), 600);
+    // Start reading (with highlight if auto-read, plain sentence otherwise)
+    if (isAutoRead) {
+        speakWithHighlight(s.text, () => {
+            if (!isAutoRead) return;
+            if (!isLast) {
+                setTimeout(() => {
+                    if (!isAutoRead) return;
+                    currentSentence++;
+                    renderSentence();
+                }, 800);
+            } else {
+                isAutoRead = false;
+                document.getElementById('story-autoread')?.classList.remove('active');
+            }
+        });
+    } else {
+        setTimeout(() => speakSentence(s.text), 600);
+    }
+
+    // Auto-read toggle
+    document.getElementById('story-autoread').addEventListener('click', () => {
+        isAutoRead = !isAutoRead;
+        if (isAutoRead) {
+            speakWithHighlight(s.text, () => {
+                if (!isAutoRead) return;
+                if (currentSentence < story.sentences.length - 1) {
+                    setTimeout(() => {
+                        if (!isAutoRead) return;
+                        currentSentence++;
+                        renderSentence();
+                    }, 800);
+                } else {
+                    isAutoRead = false;
+                }
+            });
+            document.getElementById('story-autoread').textContent = '⏹ Stop';
+            document.getElementById('story-autoread').classList.add('active');
+        } else {
+            window.speechSynthesis?.cancel();
+            document.getElementById('story-autoread').textContent = '🔊 Read to me';
+            document.getElementById('story-autoread').classList.remove('active');
+        }
+    });
 
     // Tap highlighted words
     reader.querySelectorAll('.story-word.highlight').forEach(el => {
@@ -120,25 +211,30 @@ function renderSentence() {
         });
     });
 
-    // Play button
+    // Play button — replays with highlight
     document.getElementById('story-play')?.addEventListener('click', () => {
-        speakSentence(s.text);
+        speakWithHighlight(s.text, null);
     });
 
-    // Navigation
+    // Navigation — manual nav cancels auto-read
     document.getElementById('story-prev')?.addEventListener('click', () => {
+        isAutoRead = false;
+        window.speechSynthesis?.cancel();
         playPopSound();
         currentSentence--;
         renderSentence();
     });
 
     document.getElementById('story-next')?.addEventListener('click', () => {
+        isAutoRead = false;
+        window.speechSynthesis?.cancel();
         playPopSound();
         currentSentence++;
         renderSentence();
     });
 
     document.getElementById('story-done')?.addEventListener('click', () => {
+        isAutoRead = false;
         playCelebrationSound();
         hideStory();
     });
@@ -213,6 +309,43 @@ export function injectStoriesStyles() {
       transition: transform 0.2s, background 0.2s;
     }
     .story-word.highlight:active { background: #D1C4E9; }
+
+    /* Auto-read button */
+    .story-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-lg);
+    }
+    .story-autoread-btn {
+      background: #E8F5E9;
+      color: #2E7D32;
+      border: 2px solid #A5D6A7;
+      border-radius: var(--radius-full);
+      padding: var(--space-xs) var(--space-md);
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .story-autoread-btn.active {
+      background: #FFEBEE;
+      color: #C62828;
+      border-color: #EF9A9A;
+    }
+
+    /* Word-by-word highlight while speaking */
+    .story-word.speaking {
+      background: #FFF176;
+      border-radius: 4px;
+      padding: 0 2px;
+    }
+    .story-word.highlight.speaking {
+      background: #B39DDB;
+      color: #fff;
+    }
 
     .story-controls { margin-bottom: var(--space-lg); }
     .story-play-btn {

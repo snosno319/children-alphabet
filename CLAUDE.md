@@ -799,3 +799,209 @@ Exports: `renderCaseMatch(app, navigate, props = {})`, `injectCaseMatchStyles()`
 2. Numbers module — new directory, additive only (no changes to existing screens except hub + main)
 3. Uppercase/Lowercase sort — final alphabet home nav layout change (accommodates all 6 buttons from items 1+3)
 
+---
+
+## Implementation Plan: Story Time Auto-Read (Sprint 3, Item 1)
+
+> **Why this matters**: Reading along while hearing words spoken aloud is one of the highest-evidence early literacy practices. Children who hear fluent reading while seeing text develop phonological awareness faster. The existing story reader already speaks sentences — we just need to add auto-advance + word highlighting to make it truly immersive.
+
+### Overview
+Two additions to the existing story reader:
+1. **Word-by-word highlighting** while the sentence is spoken — each word glows as it's read
+2. **Auto-advance mode** — a single "Read to me" toggle plays all sentences end-to-end, auto-advancing after each sentence finishes; child can tap any word to hear it
+
+Plus **4 new stories** added to `src/sight/data.js` (total 8 → 12).
+
+### Word Highlighting Implementation
+Use `SpeechSynthesisUtterance.onboundary` which fires with `e.charIndex` at each word boundary:
+
+```js
+// Precompute char offsets for each word token in the sentence
+function computeWordOffsets(text) {
+    const tokens = []; // { word, charStart, displayIdx }
+    let pos = 0;
+    text.split(' ').forEach((token, i) => {
+        const clean = token.replace(/[.,!?]/g, '');
+        tokens.push({ token, clean, charStart: pos, displayIdx: i });
+        pos += token.length + 1; // +1 for space
+    });
+    return tokens;
+}
+
+// Build utterance that fires highlights
+function speakWithHighlight(text, onWord, onEnd) {
+    window.speechSynthesis?.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 0.62;
+    utt.pitch = 1.12;
+    utt.onboundary = (e) => {
+        if (e.name !== 'word') return;
+        onWord(e.charIndex);
+    };
+    utt.onend = onEnd;
+    window.speechSynthesis.speak(utt);
+}
+```
+
+Each `.story-word` span gets a `data-char-start` attribute. On `onboundary`, clear `.speaking` class from all words and add it to the word whose `data-char-start` ≤ `e.charIndex` < `data-char-start + word.length`.
+
+### Auto-Advance Mode
+- "🔊 Read to me" button added to the story card header
+- Toggle state: `isAutoRead` boolean per story session
+- When ON: after `utt.onend`, wait 800ms then call `currentSentence++; renderSentence()`
+- When OFF: story behaves as before (per-sentence auto-read only)
+- Auto-read pauses at last sentence; shows ✓ done state
+- `isAutoRead` preserved across sentence changes within a story
+- Cancelled by: back button, manual next/prev tap (resets to non-auto after manual nav), or "Done"
+
+### Updated Sentence HTML
+Each word rendered as a `<span>` (non-highlight) or `<button>` (highlight) with `data-char-start`:
+```html
+<span class="story-word" data-char-start="0">Look</span>
+<button class="story-word highlight" data-char-start="5" data-word="at">at</button>
+```
+
+### `.speaking` CSS
+```css
+.story-word.speaking {
+    background: #FFF176;          /* yellow highlight */
+    border-radius: 4px;
+    padding: 0 2px;
+    transition: background 0.1s;
+}
+.story-word.highlight.speaking {
+    background: #B39DDB;          /* darker purple when a highlight word is speaking */
+}
+```
+
+### 4 New Stories (added to `src/sight/data.js`)
+Total becomes 12 stories. New entries use existing sight words:
+
+```js
+{ title: '🌊', sentences: [
+    { text: 'I can see the big blue sea.', highlights: ['I', 'can', 'see', 'the', 'big', 'blue'] },
+    { text: 'We go to play in it!', highlights: ['We', 'go', 'to', 'play', 'in'] },
+    { text: 'I like the sea!', highlights: ['I', 'like', 'the'] },
+]},
+{ title: '🍎', sentences: [
+    { text: 'Look at this red apple.', highlights: ['Look', 'at', 'this', 'red'] },
+    { text: 'It is for you and me!', highlights: ['It', 'is', 'for', 'you', 'and', 'me'] },
+    { text: 'We like to eat it!', highlights: ['We', 'like', 'to'] },
+]},
+{ title: '🚂', sentences: [
+    { text: 'I can see the big train.', highlights: ['I', 'can', 'see', 'the', 'big'] },
+    { text: 'It can go very fast!', highlights: ['It', 'can', 'go'] },
+    { text: 'We like to run with it.', highlights: ['We', 'like', 'to', 'run', 'with'] },
+]},
+{ title: '⭐', sentences: [
+    { text: 'Look up at one little star.', highlights: ['Look', 'up', 'one', 'little'] },
+    { text: 'I said it is so pretty!', highlights: ['I', 'said', 'it', 'is'] },
+    { text: 'We like to look at the sky.', highlights: ['We', 'like', 'to', 'look', 'at', 'the'] },
+]},
+```
+
+### Changes
+- `src/sight/data.js` — +4 stories (~50 lines)
+- `src/sight/stories.js` — +50 lines (autoRead toggle, speakWithHighlight, data-char-start attrs, .speaking CSS)
+
+### Estimated Scope
+- `src/sight/data.js` — +~50 lines
+- `src/sight/stories.js` — +~50 lines
+- **Total: ~100 lines**
+
+---
+
+## Implementation Plan: Parent Share Report (Sprint 3, Item 2)
+
+> **Why this matters**: Parents are the primary retention driver for children's apps — they decide whether the app stays installed. A one-tap share button lets parents send a progress summary to a co-parent, grandparent, or teacher. Evidence from Duolingo and Khan Kids shows parent share features drive +30% day-7 retention.
+
+### Overview
+A "📤 Share Progress" button in the parent dashboard. Tapping it:
+1. Builds a formatted plain-text summary of the child's progress
+2. Calls `navigator.share({ text })` (Web Share API, supported on iOS/Android)
+3. **Fallback**: if `navigator.share` is unavailable (desktop), copies to clipboard and shows a "Copied!" toast
+
+### Share Text Format
+```
+📊 [Name]'s Learning Report — English Adventure 🦁
+
+⭐ Total Stars: 42
+🔤 Letters explored: 18/26
+✏️ Letters traced: 12/26
+📖 CVC words built: 23
+👁️ Sight words learned: 15
+🔥 Day streak: 5
+
+📚 Stories read: 6/12
+🏆 Badges earned: 14/44
+
+Keep up the great work! 🌟
+```
+
+### Implementation
+Add to `renderDashboardContent()` in `src/screens/parents.js`:
+1. A share button below the summary strip
+2. A `handleShare(me, p, totalStars, streak)` function that builds text + triggers share/copy
+
+```js
+function buildShareText(name, p, totalStars, streak) {
+    const lines = [
+        `📊 ${name}'s Learning Report — English Adventure 🦁`,
+        '',
+        `⭐ Total Stars: ${totalStars}`,
+        `🔤 Letters explored: ${p.alphabet?.exploredLetters?.length || 0}/26`,
+        `✏️ Letters traced: ${p.alphabet?.tracedLetters?.length || 0}/26`,
+        `📖 CVC words built: ${p.cvc?.builtWords?.length || 0}`,
+        `👁️ Sight words learned: ${p.sight?.learnedWords?.length || 0}`,
+        `🔥 Day streak: ${streak}`,
+        '',
+        `📚 Stories read: ${p.sight?.storiesRead?.length || 0}/12`,
+        `🏆 Badges earned: ${(p.global?.earnedBadges || []).length}/44`,
+        '',
+        'Keep up the great work! 🌟',
+    ];
+    return lines.join('\n');
+}
+
+async function handleShare(name, p, totalStars, streak) {
+    const text = buildShareText(name, p, totalStars, streak);
+    if (navigator.share) {
+        await navigator.share({ text });
+    } else {
+        await navigator.clipboard.writeText(text);
+        showShareToast('Copied to clipboard!');
+    }
+}
+```
+
+### Share Button Placement
+Below the summary strip, before the module completion bars:
+```html
+<div class="dash-share-row">
+    <button class="dash-share-btn" id="dash-share">
+        📤 Share Progress
+    </button>
+</div>
+```
+
+### Toast (copy fallback)
+```js
+function showShareToast(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'dash-share-toast';
+    toast.textContent = msg;
+    document.querySelector('.dashboard-container').appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
+```
+
+### Estimated Scope
+- `src/screens/parents.js` — +~40 lines (share button HTML, buildShareText, handleShare, toast, CSS)
+- **Total: ~40 lines**
+
+---
+
+## Sprint 3 Implementation Order
+1. Story time auto-read — touches stories.js + data.js; self-contained
+2. Parent share report — touches only parents.js; independent
+

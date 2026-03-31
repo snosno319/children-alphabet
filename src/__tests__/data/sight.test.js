@@ -60,8 +60,8 @@ describe('SIGHT_WORDS', () => {
 });
 
 describe('STORIES', () => {
-    it('has exactly 8 stories', () => {
-        expect(STORIES).toHaveLength(8);
+    it('has exactly 12 stories', () => {
+        expect(STORIES).toHaveLength(12);
     });
 
     it('each story has a title and sentences array', () => {

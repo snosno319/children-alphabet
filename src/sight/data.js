@@ -120,6 +120,38 @@ export const STORIES = [
             { text: 'We like to play with this!', highlights: ['We', 'like', 'to', 'play', 'with', 'this'] },
         ],
     },
+    {
+        title: '🌊',
+        sentences: [
+            { text: 'I can see the big blue sea.', highlights: ['I', 'can', 'see', 'the', 'big', 'blue'] },
+            { text: 'We go to play in it!', highlights: ['We', 'go', 'to', 'play', 'in'] },
+            { text: 'I like the sea!', highlights: ['I', 'like', 'the'] },
+        ],
+    },
+    {
+        title: '🍎',
+        sentences: [
+            { text: 'Look at this red apple.', highlights: ['Look', 'at', 'this', 'red'] },
+            { text: 'It is for you and me!', highlights: ['It', 'is', 'for', 'you', 'and', 'me'] },
+            { text: 'We like to eat it!', highlights: ['We', 'like', 'to'] },
+        ],
+    },
+    {
+        title: '🚂',
+        sentences: [
+            { text: 'I can see the big train.', highlights: ['I', 'can', 'see', 'the', 'big'] },
+            { text: 'It can go very fast!', highlights: ['It', 'can', 'go'] },
+            { text: 'We like to run with it.', highlights: ['We', 'like', 'to', 'run', 'with'] },
+        ],
+    },
+    {
+        title: '⭐',
+        sentences: [
+            { text: 'Look up at one little star.', highlights: ['Look', 'up', 'one', 'little'] },
+            { text: 'I said it is so pretty!', highlights: ['I', 'said', 'it', 'is'] },
+            { text: 'We like to look at the sky.', highlights: ['We', 'like', 'to', 'look', 'at', 'the'] },
+        ],
+    },
 ];
 
 export const WORD_GROUPS = [

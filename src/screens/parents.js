@@ -139,6 +139,11 @@ function renderDashboardContent(container) {
             </div>
         </div>
 
+        <!-- Share button -->
+        <div class="dash-share-row">
+            <button class="dash-share-btn" id="dash-share">📤 Share Progress</button>
+        </div>
+
         <!-- Summary strip -->
         <div class="dash-summary-strip">
             <div class="dash-summary-item">
@@ -233,6 +238,11 @@ function renderDashboardContent(container) {
         localNavigate('badges');
     });
 
+    document.getElementById('dash-share').addEventListener('click', () => {
+        playPopSound();
+        handleShare(me.name, p, totalStars, streak);
+    });
+
     document.getElementById('dash-reset').addEventListener('click', () => {
         const confirmed = window.confirm(`Reset all progress for ${me.name}? This cannot be undone.`);
         if (confirmed) {
@@ -245,6 +255,49 @@ function renderDashboardContent(container) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
+
+function buildShareText(name, p, totalStars, streak) {
+    const lines = [
+        `📊 ${name}'s Learning Report — English Adventure 🦁`,
+        '',
+        `⭐ Total Stars: ${totalStars}`,
+        `🔤 Letters explored: ${p.alphabet?.exploredLetters?.length || 0}/26`,
+        `✏️ Letters traced: ${p.alphabet?.tracedLetters?.length || 0}/26`,
+        `📖 CVC words built: ${p.cvc?.builtWords?.length || 0}`,
+        `👁️ Sight words learned: ${p.sight?.learnedWords?.length || 0}`,
+        `🔥 Day streak: ${streak}`,
+        '',
+        `📚 Stories read: ${p.sight?.storiesRead?.length || 0}/12`,
+        `🏆 Badges earned: ${(p.global?.earnedBadges || []).length}/44`,
+        '',
+        'Keep up the great work! 🌟',
+    ];
+    return lines.join('\n');
+}
+
+async function handleShare(name, p, totalStars, streak) {
+    const text = buildShareText(name, p, totalStars, streak);
+    try {
+        if (navigator.share) {
+            await navigator.share({ text });
+        } else {
+            await navigator.clipboard.writeText(text);
+            showShareToast('Copied to clipboard! 📋');
+        }
+    } catch (e) {
+        // User cancelled share or clipboard failed — silent
+    }
+}
+
+function showShareToast(msg) {
+    const existing = document.querySelector('.dash-share-toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'dash-share-toast';
+    toast.textContent = msg;
+    document.querySelector('.dashboard-container')?.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
 
 function accuracy(correct = 0, total = 0) {
     if (!total) return null; // null = no data yet
@@ -543,6 +596,41 @@ export function injectParentsStyles() {
         padding: 8px 18px; border-radius: 20px;
         box-shadow: 0 3px 10px rgba(124,58,237,0.35);
         white-space: nowrap;
+      }
+
+      /* ── Share button ── */
+      .dash-share-row { text-align: center; padding: var(--space-md) 0 var(--space-sm); }
+      .dash-share-btn {
+        background: linear-gradient(135deg, #4FC3F7, #0288D1);
+        color: #fff;
+        border: none;
+        padding: var(--space-md) var(--space-2xl, 2rem);
+        border-radius: var(--radius-full);
+        font-family: var(--font-display);
+        font-size: 1rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 4px 0 rgba(0,0,0,0.15), var(--shadow-md);
+        transition: transform 0.15s;
+      }
+      .dash-share-btn:active { transform: translateY(2px); }
+      .dash-share-toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1E293B;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: var(--radius-full);
+        font-size: 0.9rem;
+        font-weight: 600;
+        z-index: 999;
+        animation: toastIn 0.25s ease forwards;
+      }
+      @keyframes toastIn {
+        from { opacity:0; transform: translateX(-50%) translateY(10px); }
+        to   { opacity:1; transform: translateX(-50%) translateY(0); }
       }
 
       .dash-reset-section { text-align: center; }
