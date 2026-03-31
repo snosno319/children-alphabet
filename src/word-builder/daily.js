@@ -96,6 +96,7 @@ export function renderDaily(app, navigate, props = {}) {
       }
     } else {
       playWrongSound();
+      speakInstruction('wrong');
       btn.classList.add('wrong');
       btn.style.animation = 'shake 400ms ease';
       setTimeout(() => { btn.classList.remove('wrong'); btn.style.animation = ''; }, 400);

@@ -54,15 +54,19 @@ export function renderHome(app, navigate) {
       <div class="home-nav">
         <button class="home-nav-btn spell-btn" data-screen="spell">
           <span class="home-nav-icon">✏️</span>
+          <span class="home-nav-label">Spell</span>
         </button>
         <button class="home-nav-btn match-btn" data-screen="picmatch">
           <span class="home-nav-icon">🖼️</span>
+          <span class="home-nav-label">Match</span>
         </button>
         <button class="home-nav-btn blend-btn" data-screen="blend">
           <span class="home-nav-icon">🔊</span>
+          <span class="home-nav-label">Blend</span>
         </button>
         <button class="home-nav-btn daily-btn ${dailyDone ? 'completed' : 'pulse-ring'}" data-screen="daily">
           <span class="home-nav-icon">${dailyDone ? '✅' : '🌟'}</span>
+          <span class="home-nav-label">${dailyDone ? 'Done!' : 'Daily'}</span>
         </button>
       </div>
     </div>
@@ -128,13 +132,14 @@ export function injectHomeStyles() {
     .progress-ring-fill { fill: none; stroke: var(--color-primary); stroke-width: 6; stroke-linecap: round; transition: stroke-dasharray 1s ease; }
     .progress-ring-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 
-    .home-nav { display: flex; gap: var(--space-lg); z-index: 1; flex-wrap: wrap; justify-content: center; }
+    .home-nav { display: flex; gap: var(--space-md); z-index: 1; flex-wrap: wrap; justify-content: center; max-width: 520px; }
     .home-nav-btn {
-      width: 110px; height: 110px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: var(--shadow-xl); transition: transform var(--transition-bounce); position: relative;
+      width: 100px; padding: var(--space-md) var(--space-sm);
+      border-radius: var(--radius-xl);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-sm);
+      box-shadow: 0 6px 0 rgba(0,0,0,0.2), var(--shadow-lg); transition: transform var(--transition-bounce), box-shadow 0.15s; position: relative;
     }
-    .home-nav-btn:active { box-shadow: var(--shadow-sm); }
+    .home-nav-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.15), var(--shadow-sm); }
     .spell-btn { background: linear-gradient(135deg, #2E7D32, #1B5E20); }
     .match-btn { background: linear-gradient(135deg, #7C4DFF, #651FFF); }
     .blend-btn { background: linear-gradient(135deg, #FF6B6B, #E53E3E); }

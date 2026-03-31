@@ -50,15 +50,18 @@ export function renderHome(app, navigate) {
       <div class="home-nav">
         <button class="home-nav-btn flashcard-btn" data-screen="flashcards">
           <span class="home-nav-icon">🃏</span>
+          <span class="home-nav-label">Flash Cards</span>
           <div class="tap-hint" id="tap-hint-1">
             <span class="tap-hand">👆</span>
           </div>
         </button>
         <button class="home-nav-btn match-btn" data-screen="match">
           <span class="home-nav-icon">🔗</span>
+          <span class="home-nav-label">Match</span>
         </button>
         <button class="home-nav-btn stories-btn" data-screen="stories">
           <span class="home-nav-icon">📖</span>
+          <span class="home-nav-label">Stories</span>
         </button>
       </div>
     </div>
@@ -129,8 +132,8 @@ export function injectHomeStyles() {
     .progress-ring-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 
     .home-nav { display: flex; gap: var(--space-2xl); z-index: 1; justify-content: center; }
-    .home-nav-btn { width: 140px; height: 140px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-xl); transition: transform var(--transition-bounce), box-shadow var(--transition-base); position: relative; animation: pulse 3s ease-in-out infinite; }
-    .home-nav-btn:active { box-shadow: var(--shadow-sm); }
+    .home-nav-btn { width: 110px; padding: var(--space-lg) var(--space-sm) var(--space-md); border-radius: var(--radius-xl); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-sm); box-shadow: 0 6px 0 rgba(0,0,0,0.2), var(--shadow-lg); transition: transform var(--transition-bounce), box-shadow 0.15s; position: relative; }
+    .home-nav-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.15), var(--shadow-sm); }
     .flashcard-btn { background: linear-gradient(135deg, #FFB300 0%, #FF8F00 100%); }
     .match-btn { background: linear-gradient(135deg, #7C4DFF 0%, #651FFF 100%); }
     .stories-btn { background: linear-gradient(135deg, #00BCD4 0%, #00ACC1 100%); }

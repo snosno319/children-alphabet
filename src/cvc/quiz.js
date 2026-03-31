@@ -6,8 +6,9 @@
 import { getAllWords } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playCelebrationSound, playPopSound, speakInstruction, speak } from '../shared/audio.js';
 import { recordCvcQuizAnswer, addCvcStars, recordCvcAccuracy } from '../shared/storage.js';
-import { spawnConfetti } from '../shared/confetti.js';
+import { spawnConfetti, spawnBigCelebration } from '../shared/confetti.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
+import { floatStars } from '../shared/feedback.js';
 
 let questionIndex = 0;
 let score = 0;
@@ -142,6 +143,8 @@ function handleAnswer(selectedWord) {
     feedback.className = 'quiz-feedback correct-feedback';
     document.getElementById('quiz-score').textContent = `⭐ ${score}`;
     speakInstruction('quiz_correct');
+    const correctBtn = Array.from(buttons).find(b => b.dataset.word === q.correct.word);
+    floatStars(correctBtn, 3);
   } else {
     wrongGuesses++;
 
@@ -157,6 +160,7 @@ function handleAnswer(selectedWord) {
     }
 
     playWrongSound();
+    speakInstruction('wrong');
     feedback.innerHTML = `${q.correct.emoji}`;
     feedback.className = 'quiz-feedback wrong-feedback';
     
@@ -195,7 +199,7 @@ function showResults() {
   else emoji = '💪';
 
   playCelebrationSound();
-  spawnConfetti();
+  if (percent >= 60) spawnBigCelebration(); else spawnConfetti();
 
   content.innerHTML = `
     <div class="quiz-results">

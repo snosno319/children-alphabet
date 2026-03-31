@@ -88,6 +88,7 @@ function nextRound(app, navigate) {
         btn.classList.add('correct');
         recordRhymeMatch(true);
         score++;
+        setTimeout(() => speakInstruction('correct'), 700);
 
         setTimeout(() => {
           currentRound++;
@@ -99,6 +100,7 @@ function nextRound(app, navigate) {
         btn.classList.add('wrong');
         btn.disabled = true;
         recordRhymeMatch(false);
+        setTimeout(() => speakInstruction('wrong'), 700);
       }
     });
   });

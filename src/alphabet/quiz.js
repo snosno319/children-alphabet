@@ -6,6 +6,8 @@ import { LETTERS } from './data.js';
 import { speakLetter, speakWord, playCorrectSound, playWrongSound, playCelebrationSound, playPopSound, speakInstruction, speak } from '../shared/audio.js';
 import { recordAlphabetQuizAnswer, addAlphabetStars, recordLetterAccuracy } from '../shared/storage.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
+import { floatStars } from '../shared/feedback.js';
+import { spawnBigCelebration } from '../shared/confetti.js';
 
 let questionIndex = 0;
 let score = 0;
@@ -171,6 +173,8 @@ function handleAnswer(selectedLetter) {
     feedback.className = 'quiz-feedback correct-feedback';
     document.getElementById('quiz-score').textContent = `⭐ ${score}`;
     speakInstruction('quiz_correct');
+    const correctBtn = Array.from(buttons).find(b => b.dataset.letter === q.correct.letter);
+    floatStars(correctBtn, 3);
   } else {
     wrongGuesses++;
     
@@ -186,6 +190,7 @@ function handleAnswer(selectedLetter) {
     }
     
     playWrongSound();
+    speakInstruction('quiz_wrong');
     // Show correct answer as emoji — voice explains
     feedback.innerHTML = `${q.correct.emoji}`;
     feedback.className = 'quiz-feedback wrong-feedback';
@@ -224,6 +229,7 @@ function showResults() {
   else emoji = '💪';
 
   playCelebrationSound();
+  if (percent >= 60) spawnBigCelebration();
 
   content.innerHTML = `
     <div class="quiz-results">

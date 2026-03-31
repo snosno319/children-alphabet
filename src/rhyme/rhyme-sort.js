@@ -86,6 +86,7 @@ function nextRound(app, navigate) {
                 playCorrectSound();
                 playSwipeSound();
                 speakWord(wordData.word);
+                setTimeout(() => speakInstruction('correct'), 700);
 
                 const card = document.getElementById('rs-card');
                 const rect = bucket.getBoundingClientRect();
@@ -107,6 +108,7 @@ function nextRound(app, navigate) {
                 }, 800);
             } else {
                 playWrongSound();
+                speakInstruction('wrong');
                 bucket.style.animation = 'shake 0.4s';
                 setTimeout(() => bucket.style.animation = '', 400);
                 recordRhymeSort(false);

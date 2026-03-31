@@ -53,19 +53,22 @@ export function renderHome(app, navigate) {
         </div>
       </div>
 
-      <!-- Navigation — ICON ONLY -->
+      <!-- Navigation cards -->
       <div class="home-nav">
         <button class="home-nav-btn explore-btn" data-screen="cvc-explore">
           <span class="home-nav-icon">📖</span>
+          <span class="home-nav-label">Explore</span>
           <div class="tap-hint" id="tap-hint-1">
             <span class="tap-hand">👆</span>
           </div>
         </button>
         <button class="home-nav-btn build-btn" data-screen="build">
           <span class="home-nav-icon">🧩</span>
+          <span class="home-nav-label">Build</span>
         </button>
         <button class="home-nav-btn quiz-btn" data-screen="cvc-quiz">
           <span class="home-nav-icon">🎯</span>
+          <span class="home-nav-label">Quiz</span>
         </button>
       </div>
     </div>
@@ -220,19 +223,21 @@ export function injectHomeStyles() {
       justify-content: center;
     }
     .home-nav-btn {
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
+      width: 110px;
+      padding: var(--space-lg) var(--space-sm) var(--space-md);
+      border-radius: var(--radius-xl);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: var(--shadow-xl);
-      transition: transform var(--transition-bounce), box-shadow var(--transition-base);
+      gap: var(--space-sm);
+      box-shadow: 0 6px 0 rgba(0,0,0,0.2), var(--shadow-lg);
+      transition: transform var(--transition-bounce), box-shadow 0.15s;
       position: relative;
-      animation: pulse 3s ease-in-out infinite;
     }
     .home-nav-btn:active {
-      box-shadow: var(--shadow-sm);
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.15), var(--shadow-sm);
     }
     .explore-btn {
       background: linear-gradient(135deg, #4ECDC4 0%, #36B5AC 100%);

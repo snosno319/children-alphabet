@@ -18,6 +18,9 @@ let lastY = 0;
 let totalPixelsDrawn = 0;
 let firstVisit = true;
 let localNavigate = null; // store navigate
+let selectedColor = null;
+
+const EXTRA_TRACE_COLORS = ['#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#007AFF', '#AF52DE', '#FF2D55'];
 
 export function renderTrace(app, navigate, props = {}) {
   localNavigate = navigate;
@@ -29,6 +32,7 @@ export function renderTrace(app, navigate, props = {}) {
   }
   isUppercase = true; // Always start with uppercase
   const l = LETTERS[currentIndex];
+  selectedColor = l.color;
 
   app.innerHTML = `
     <div class="screen trace-screen" id="trace">
@@ -64,6 +68,12 @@ export function renderTrace(app, navigate, props = {}) {
         </div>` : ''}
       </div>
 
+      <div class="trace-palette" id="trace-palette">
+        ${[l.color, ...EXTRA_TRACE_COLORS].map(c => `
+          <button class="trace-color-btn ${c === l.color ? 'active' : ''}" data-color="${c}" style="--btn-color: ${c}"></button>
+        `).join('')}
+      </div>
+
       <div class="trace-controls">
         <button class="trace-ctrl-icon" id="trace-prev" style="${window.isJourneyMode ? 'visibility:hidden' : ''}">◀</button>
         <button class="trace-ctrl-done" id="trace-check">✅</button>
@@ -73,6 +83,13 @@ export function renderTrace(app, navigate, props = {}) {
   `;
 
   setupCanvas();
+
+  document.getElementById('trace-palette').addEventListener('click', (e) => {
+    const btn = e.target.closest('.trace-color-btn');
+    if (!btn) return;
+    selectedColor = btn.dataset.color;
+    document.querySelectorAll('.trace-color-btn').forEach(b => b.classList.toggle('active', b === btn));
+  });
 
   // Auto-speak on entry — gentle delay
   setTimeout(() => {
@@ -179,7 +196,7 @@ function draw(e) {
   ctx.beginPath();
   ctx.moveTo(lastX, lastY);
   ctx.lineTo(x, y);
-  ctx.strokeStyle = l.color;
+  ctx.strokeStyle = selectedColor;
   ctx.lineWidth = 12; // Thicker for kids
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -273,12 +290,25 @@ function goToLetter(index) {
   currentIndex = index;
   isUppercase = true; // Reset to Uppercase on new letter
   const l = LETTERS[index];
+  selectedColor = l.color;
 
   updateGuide();
 
   document.querySelectorAll('.trace-strip-btn').forEach((btn, i) => {
     btn.classList.toggle('active', i === index);
   });
+
+  // Update palette: replace first button (letter color) and reset selection
+  const palette = document.getElementById('trace-palette');
+  if (palette) {
+    const colors = [l.color, ...EXTRA_TRACE_COLORS];
+    const btns = palette.querySelectorAll('.trace-color-btn');
+    btns.forEach((btn, i) => {
+      btn.dataset.color = colors[i];
+      btn.style.setProperty('--btn-color', colors[i]);
+      btn.classList.toggle('active', i === 0);
+    });
+  }
 
   clearCanvas();
   scrollStripToActive();
@@ -348,6 +378,17 @@ export function injectTraceStyles() {
       animation: pulse 2.5s ease-in-out infinite;
     }
     .trace-ctrl-done:active { transform: scale(0.9); }
+
+    /* Color Palette */
+    .trace-palette { display: flex; justify-content: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-lg); flex-shrink: 0; }
+    .trace-color-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--btn-color); border: 3px solid transparent;
+      box-shadow: var(--shadow-sm); cursor: pointer; flex-shrink: 0;
+      transition: transform var(--transition-bounce), border-color 0.15s;
+    }
+    .trace-color-btn:active { transform: scale(0.85); }
+    .trace-color-btn.active { border-color: rgba(0,0,0,0.4); transform: scale(1.2); box-shadow: var(--shadow-md); }
 
     /* Hint */
     .trace-hand-hint {
