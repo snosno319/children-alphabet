@@ -13,11 +13,20 @@ import { renderProfileScreen, injectProfileStyles } from './screens/profile.js';
 // Parents
 import { renderParents, injectParentsStyles } from './screens/parents.js';
 
+// Badges
+import { renderBadges, injectBadgesStyles } from './screens/badges.js';
+
 // Alphabet
 import { renderHome as renderAlphabetHome, injectHomeStyles as injectAlphabetHomeStyles } from './alphabet/home.js';
 import { renderExplore, injectExploreStyles } from './alphabet/explore.js';
 import { renderTrace, injectTraceStyles } from './alphabet/trace.js';
 import { renderQuiz as renderAlphabetQuiz, injectQuizStyles as injectAlphabetQuizStyles } from './alphabet/quiz.js';
+import { renderSong, injectSongStyles } from './alphabet/song.js';
+import { renderMemory, injectMemoryStyles } from './alphabet/memory.js';
+import { renderCaseMatch, injectCaseMatchStyles } from './alphabet/case-match.js';
+import { renderHome as renderNumbersHome, injectHomeStyles as injectNumbersHomeStyles } from './numbers/home.js';
+import { renderExplore as renderNumbersExplore, injectExploreStyles as injectNumbersExploreStyles } from './numbers/explore.js';
+import { renderQuiz as renderNumbersQuiz, injectQuizStyles as injectNumbersQuizStyles } from './numbers/quiz.js';
 
 // CVC Words
 import { renderHome as renderCvcHome, injectHomeStyles as injectCvcHomeStyles } from './cvc/home.js';
@@ -59,12 +68,21 @@ const SCREENS = {
     'hub': { render: renderHub, styles: injectHubStyles },
     'profile': { render: renderProfileScreen, styles: injectProfileStyles },
     'parents': { render: renderParents, styles: injectParentsStyles },
+    'badges': { render: renderBadges, styles: injectBadgesStyles },
 
     // Alphabet
     'alphabet-home': { render: renderAlphabetHome, styles: injectAlphabetHomeStyles },
     'explore': { render: renderExplore, styles: injectExploreStyles },
     'trace': { render: renderTrace, styles: injectTraceStyles },
     'quiz': { render: renderAlphabetQuiz, styles: injectAlphabetQuizStyles },
+    'song': { render: renderSong, styles: injectSongStyles },
+    'memory': { render: renderMemory, styles: injectMemoryStyles },
+    'case-match': { render: renderCaseMatch, styles: injectCaseMatchStyles },
+
+    // Numbers
+    'numbers-home':    { render: renderNumbersHome,    styles: injectNumbersHomeStyles },
+    'numbers-explore': { render: renderNumbersExplore, styles: injectNumbersExploreStyles },
+    'numbers-quiz':    { render: renderNumbersQuiz,    styles: injectNumbersQuizStyles },
 
     // CVC Words
     'cvc-home': { render: renderCvcHome, styles: injectCvcHomeStyles },

@@ -6,8 +6,10 @@ import {
     getTotalStars, getSubAppStars, getActiveProfile, getStreak,
     getAlphabetCompletionPercent, getCvcCompletionPercent,
     getSightCompletionPercent, getWordBuilderCompletionPercent,
-    getPhonicsStats, getRhymeStats,
+    getPhonicsStats, getRhymeStats, getEarnedBadges, getNumbersCompletionPercent,
 } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
+import { showLeo, hideLeo } from '../shared/mascot.js';
 import { playPopSound, speakInstruction } from '../shared/audio.js';
 import { startJourney, getJourneyState } from '../shared/journey.js';
 
@@ -78,12 +80,22 @@ const SUB_APPS = [
             return Math.round((correct / total) * 100);
         },
     },
+    {
+        id: 'numbers',
+        icon: '🔢',
+        mascot: '🦁',
+        bg: 'linear-gradient(145deg, #FF7043 0%, #FF8A65 100%)',
+        shadow: '#BF360C',
+        label: 'Numbers',
+        getCompletion: getNumbersCompletionPercent,
+    },
 ];
 
 export function renderHub(app, navigate) {
     const totalStars = getTotalStars();
     const profile = getActiveProfile();
     const streak = getStreak();
+    const badgeCount = getEarnedBadges().length;
     const journeyState = getJourneyState();
     const journeyStep = journeyState?.currentStep ?? 0;
     const journeyTotal = 26 * 3; // rough total journey steps
@@ -109,6 +121,7 @@ export function renderHub(app, navigate) {
                 <div class="hub-topbar-right">
                     ${streak >= 2 ? `<div class="hub-streak-badge">🔥 ${streak}</div>` : ''}
                     <div class="hub-stars-badge">⭐ ${totalStars}</div>
+                    <button class="hub-badges-btn" id="hub-badges" title="My Stickers">🏆 ${badgeCount}</button>
                     <button class="hub-parents-btn" id="hub-parents" title="Parents">📊</button>
                 </div>
             </div>
@@ -153,6 +166,9 @@ export function renderHub(app, navigate) {
     // Auto-speak welcome
     setTimeout(() => speakInstruction('welcome'), 800);
 
+    // Leo mascot — appears after welcome settles
+    setTimeout(() => showLeo('hub', { streak, totalStars }), 1400);
+
     // Journey
     document.getElementById('hub-journey').addEventListener('click', () => {
         playPopSound();
@@ -161,17 +177,29 @@ export function renderHub(app, navigate) {
         setTimeout(() => startJourney(navigate), 200);
     });
 
+    // Badges
+    document.getElementById('hub-badges').addEventListener('click', () => {
+        playPopSound();
+        hideLeo();
+        navigate('badges');
+    });
+
     // Parents
     document.getElementById('hub-parents').addEventListener('click', () => {
         playPopSound();
+        hideLeo();
         window.speechSynthesis?.cancel();
         navigate('parents');
     });
+
+    // Check for retroactively earned badges on app load
+    checkAndAwardBadges(navigate);
 
     // Sub-app cards
     app.querySelectorAll('.hub-card').forEach(card => {
         card.addEventListener('click', () => {
             playPopSound();
+            hideLeo();
             card.style.transform = 'scale(0.88)';
             setTimeout(() => {
                 window.speechSynthesis?.cancel();
@@ -270,6 +298,18 @@ export function injectHubStyles() {
             border-radius: var(--radius-full);
             box-shadow: var(--shadow-md);
         }
+        .hub-badges-btn {
+            height: 36px; padding: 0 12px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #A78BFA, #7C3AED);
+            color: #fff;
+            font-family: var(--font-display); font-size: 0.9rem; font-weight: 800;
+            display: flex; align-items: center; gap: 4px;
+            border: none; cursor: pointer;
+            box-shadow: 0 3px 10px rgba(124,58,237,0.4);
+            transition: transform var(--transition-bounce);
+        }
+        .hub-badges-btn:active { transform: scale(0.88); }
         .hub-parents-btn {
             width: 44px; height: 44px;
             border-radius: 50%;

@@ -59,6 +59,10 @@ function createDefaultProgress() {
             quizTotal: 0,
             letterScores: {}, // { 'A': { correct: 0, wrong: 0 }, ... }
             stars: 0,
+            memoryBestEasy: null,
+            memoryBestHard: null,
+            caseMatchCorrect: 0,
+            caseMatchTotal: 0,
         },
         cvc: {
             exploredFamilies: [],
@@ -101,6 +105,12 @@ function createDefaultProgress() {
             rhymeSortTotal: 0,
             oddOneOutCorrect: 0,
             oddOneOutTotal: 0,
+            stars: 0,
+        },
+        numbers: {
+            exploredNumbers: [],
+            quizCorrect: 0,
+            quizTotal: 0,
             stars: 0,
         },
         global: {
@@ -194,6 +204,11 @@ export function getAlphabetCompletionPercent() {
     // 26 explored + 26 traced = 52 total
     const total = a.exploredLetters.length + a.tracedLetters.length;
     return Math.round((total / 52) * 100);
+}
+
+export function getNumbersCompletionPercent() {
+    const p = getProgress();
+    return Math.round(((p.numbers?.exploredNumbers?.length || 0) / 10) * 100);
 }
 
 /* ============================================
