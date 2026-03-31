@@ -1,5 +1,6 @@
 import { getAllProgress, getActiveProfile } from './storage.js';
 import { playCelebrationSound } from './audio.js';
+import { showLeo } from './mascot.js';
 
 /**
  * journey.js
@@ -128,6 +129,7 @@ export function advanceJourney(navigate) {
         
         // Show celebration
         playCelebrationSound();
+        showLeo('journey_done', {}, { duration: 5000 });
         const overlay = document.createElement('div');
         overlay.innerHTML = `
             <div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:var(--font-display);">

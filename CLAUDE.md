@@ -89,6 +89,7 @@ npm run test:coverage # coverage report
 4. Varied voice feedback — `speakInstruction` on every correct/wrong answer across all game screens
 5. Trace color picker — 8-color palette in trace screen; resets to letter color on navigation
 6. UI/UX overhaul — hub labels fix, profile screen, canvas-confetti, nav card labels, floatStars feedback
+7. Badge / Sticker collection — 44 badges, earn overlay, sticker book screen, 15 integration points
 
 ## Roadmap (see SPECS.md for full technical specs)
 
@@ -280,3 +281,224 @@ No new WAV files required. For the earn overlay use:
 - `src/screens/parents.js` — +30 lines (badge summary section)
 - 15 integration point files — +2-3 lines each (~40 lines total)
 - **Total: ~460 lines added/changed**
+
+---
+
+## Implementation Plan: Alphabet Song (Sprint 1, Item 1)
+
+> **Why this matters**: The ABC song is the single most recognisable piece of early literacy content in the world. Children who are learning letters already know the tune — anchoring it to the app creates an immediate "I know this!" moment. Tap-along mode adds interactivity; the melody plays even without tapping, so passive engagement is also supported. No new audio assets required (letter WAVs a.wav–z.wav already exist).
+
+### Overview
+Two modes in one screen:
+1. **Auto-play**: tap ▶ — melody plays A→Z automatically, each letter glows in sequence, child can tap along
+2. **Tap mode**: all letters visible; tap any letter to hear it sing (plays note + WAV); no auto-advance
+
+### Melody Data
+ABC song follows the Twinkle Twinkle Little Star tune. Each letter mapped to a frequency (Hz) and duration (seconds) at ~BPM 112:
+
+```js
+// Quarter = 0.43s, Half = 0.72s at BPM 112
+const ABC_MELODY = [
+  // A B C D E F G  (Twinkle twinkle little...)
+  { letter:'A', freq:261.63, dur:0.43 }, // C4
+  { letter:'B', freq:261.63, dur:0.43 }, // C4
+  { letter:'C', freq:392.00, dur:0.43 }, // G4
+  { letter:'D', freq:392.00, dur:0.43 }, // G4
+  { letter:'E', freq:440.00, dur:0.43 }, // A4
+  { letter:'F', freq:440.00, dur:0.43 }, // A4
+  { letter:'G', freq:392.00, dur:0.72 }, // G4 (half)
+  // H I J K L M N  (star how I wonder...)
+  { letter:'H', freq:349.23, dur:0.43 }, // F4
+  { letter:'I', freq:349.23, dur:0.43 }, // F4
+  { letter:'J', freq:329.63, dur:0.43 }, // E4
+  { letter:'K', freq:329.63, dur:0.43 }, // E4
+  { letter:'L', freq:293.66, dur:0.43 }, // D4
+  { letter:'M', freq:293.66, dur:0.43 }, // D4
+  { letter:'N', freq:261.63, dur:0.72 }, // C4 (half)
+  // O P  Q R S  T U V  W X Y Z
+  { letter:'O', freq:392.00, dur:0.43 }, // G4
+  { letter:'P', freq:392.00, dur:0.58 }, // G4
+  { letter:'Q', freq:349.23, dur:0.43 }, // F4
+  { letter:'R', freq:349.23, dur:0.43 }, // F4
+  { letter:'S', freq:329.63, dur:0.72 }, // E4 (half)
+  { letter:'T', freq:329.63, dur:0.43 }, // E4
+  { letter:'U', freq:293.66, dur:0.43 }, // D4
+  { letter:'V', freq:293.66, dur:0.72 }, // D4 (half)
+  { letter:'W', freq:261.63, dur:0.43 }, // C4
+  { letter:'X', freq:392.00, dur:0.43 }, // G4
+  { letter:'Y', freq:440.00, dur:0.43 }, // A4
+  { letter:'Z', freq:392.00, dur:0.90 }, // G4 (long final)
+];
+```
+
+Each step plays:
+1. A short Web Audio oscillator tone at `freq` for `dur * 0.85` (staccato gap)
+2. `playAudio('audio/letters/${letter.toLowerCase()}.wav')` simultaneously
+
+### Screen Layout
+```
+┌─────────────────────────────────┐
+│  ⬅  ABC Song            🎵      │  ← header, back to alphabet-home
+├─────────────────────────────────┤
+│                                 │
+│  [A🍎][B🐻][C🐱][D🐶][E🐘][F🐟] │
+│  [G🦒][H🐴][I🍦][J🪼][K🐨][L🦁] │  ← 5 rows × 6 cols (last row: Y Z)
+│  [M🐭][N🐦][O🐙][P🐷][Q👸][R🌈] │
+│  [S🐍][T🐯][U☂️][V🎻][W🐺][X❌]  │
+│  [Y🪀][Z🦓]                     │
+│                                 │
+│  active letter: glows + bounces │  ← ring highlight + scale(1.25)
+├─────────────────────────────────┤
+│   [ ▶ Sing! ]  [ 🔤 Tap mode ]  │  ← play/stop + mode toggle
+└─────────────────────────────────┘
+```
+
+- **Active letter**: colored circle glow matching `LETTERS[i].color`, scale(1.25), bounce animation
+- **Inactive**: normal rounded square
+- **Completed** (auto-play past): slight dim (opacity 0.5)
+- **Tap mode active**: all letters at full opacity; tap triggers single-letter sing; no auto-advance
+
+### Control Bar
+- `▶ Sing!` / `⏹ Stop` — toggles auto-play; becomes Stop while playing
+- `🔤 Tap` — tap mode: disables auto-play, child taps any letter at their own pace
+- Auto-play loops once and stops (does not loop forever)
+
+### Tap Interaction (both modes)
+- Tapping a letter in auto-play: plays `spawnStarBurst(x,y)` at tap position + visual pop
+- Tapping a letter in tap mode: plays note + WAV + highlights it + star burst
+
+### Audio Implementation
+```js
+// Single letter sing (used in both modes)
+function singLetter(index) {
+    const { letter, freq, dur } = ABC_MELODY[index];
+    // 1. Play synth note
+    playMelodyNote(freq, dur * 0.85);
+    // 2. Play WAV simultaneously
+    playAudio(`audio/letters/${letter.toLowerCase()}.wav`);
+    // 3. Highlight cell
+    highlightCell(index);
+}
+
+// Web Audio tone (gentle sine wave, child-friendly)
+function playMelodyNote(freq, duration) {
+    const ctx = getAudioContext(); // imported from audio.js
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + duration);
+}
+```
+
+**Timing challenge**: `playAudio()` cancels any currently playing WAV. In auto-play, successive letters cancel each other's WAV — this is intentional (letter name clips are short). Gap between notes (staccato) provides clean separation.
+
+### New File: `src/alphabet/song.js`
+Exports: `renderSong(app, navigate, props = {})`, `injectSongStyles()`
+
+### Route + Nav
+- Route: `'song'` in `src/main.js`
+- Add **Song** button to `src/alphabet/home.js` nav row: `🎵` icon, label "Song", gradient `linear-gradient(135deg, #FFB300, #FF8A65)`
+- Nav row becomes 4 buttons (Explore, Trace, Quiz, Song) — reduce `width` from 110px to 90px on each, or use 2×2 grid layout
+
+### Estimated Scope
+- `src/alphabet/song.js` — ~200 lines (new file)
+- `src/alphabet/home.js` — +10 lines (song button + CSS tweak)
+- `src/main.js` — +2 lines (route)
+- **Total: ~215 lines**
+
+---
+
+## Implementation Plan: Leo the Lion Mascot (Sprint 1, Item 2)
+
+> **Why this matters**: Named characters dramatically increase emotional engagement and retention in children's education apps (evidence: Duolingo's Duo, Khan Kids' characters, Elmo). Leo costs zero audio assets (pure CSS/emoji) and appears in high-value moments: greeting on the hub, celebrating badges, encouraging streaks. A consistent character makes the app feel alive.
+
+### Overview
+Leo is a reusable floating component. He appears at the bottom of the screen with a speech bubble, animates in, delivers a message, then fades out (or stays until dismissed). All appearances are non-blocking — they don't prevent interaction with the screen underneath.
+
+### Leo Visual (pure CSS + emoji)
+```
+    🦁         ← 64px emoji, slight bounce idle animation
+  ┌──────────────────┐
+  │ Hi! Ready to     │  ← speech bubble (rounded, white, drop shadow)
+  │ learn today? 🌟  │
+  └──────────────────┘
+```
+- Positioned: `position:fixed; bottom: 16px; left: 16px` (default)
+- Entrance: `slideInLeft` 400ms ease
+- Exit: `slideOutLeft` 300ms ease, then DOM removal
+- Speech bubble: white rounded rect with left-pointing tail (CSS `::before` triangle)
+- Leo emoji bounces gently (keyframe: `translateY(0) → translateY(-6px)` 1.5s ease loop)
+- On `celebrate` context: Leo jumps (`translateY(-20px)` quick pop)
+- On `streak` context: Leo has animated 🔥 next to him
+
+### Contexts & Messages
+```js
+const LEO_MESSAGES = {
+  hub_greeting: [
+    "Hi! Ready to learn? 🌟",
+    "Let's have fun today! 🎉",
+    "You're a star learner! ⭐",
+    "What shall we learn? 🤔",
+  ],
+  hub_streak: (n) => `🔥 ${n} days in a row! Wow!`,
+  hub_stars:  (n) => `⭐ ${n} stars! You're amazing!`,
+  badge_earned:   ["New sticker! You rock! 🏆", "Collect them all! ✨"],
+  journey_done:   ["Journey complete! Amazing! 🎊", "You did it! I'm so proud! 🦁"],
+  well_done:      ["Great job! Keep going! 💪", "You're getting better! 🌈"],
+};
+```
+
+Streak message shows if `streak >= 3`. Star message shows if `totalStars >= 10`. Otherwise shows a random `hub_greeting`.
+
+### API
+```js
+// Mount Leo to a container element. He auto-dismisses after `duration` ms (default 4000).
+// Returns a cleanup function.
+export function showLeo(context, data = {}, options = {})
+// context: 'hub'|'badge_earned'|'journey_done'|'well_done'
+// data: { streak, totalStars, badgeLabel }
+// options: { duration: 4000, position: 'bottom-left'|'bottom-right'|'center' }
+
+// Remove Leo immediately (used on navigation)
+export function hideLeo()
+```
+
+### Integration Points
+| Location | Context | Trigger |
+|---|---|---|
+| `src/hub/home.js` | `'hub'` | On render — shows after 1.2s delay |
+| `src/shared/badges.js` (overlay) | `'badge_earned'` | Leo peeks from bottom of overlay |
+| `src/shared/journey.js` | `'journey_done'` | After `advanceJourney` completes all steps |
+
+### Hub Integration Detail
+- Leo appears 1.2s after hub renders
+- Message chosen based on: streak ≥ 3 → streak message; else totalStars ≥ 10 → stars message; else random greeting
+- Auto-dismisses after 4s
+- Tapping Leo dismisses him immediately (with a little wave animation)
+- Leo is hidden when navigating away (hub nav event fires `hideLeo()`)
+
+### Badge Overlay Integration
+- In `showBadgeOverlay()` (badges.js), Leo appears at bottom of overlay with `'badge_earned'` context
+- Uses `position: 'bottom-left'` within the overlay (not the full screen)
+
+### Journey Complete Integration
+- In `src/shared/journey.js`, after all journey steps done, call `showLeo('journey_done', {}, { duration: 5000 })`
+
+### New File: `src/shared/mascot.js`
+```js
+export function showLeo(context, data = {}, options = {}) { ... }
+export function hideLeo() { ... }
+export function injectMascotStyles() { ... }
+```
+
+### Estimated Scope
+- `src/shared/mascot.js` — ~120 lines (new file)
+- `src/hub/home.js` — +5 lines (showLeo call + hideLeo on navigate)
+- `src/shared/badges.js` — +4 lines (showLeo in overlay)
+- `src/shared/journey.js` — +3 lines (showLeo on complete)
+- **Total: ~135 lines**
+

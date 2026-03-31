@@ -6,6 +6,7 @@ import { LETTERS } from '../alphabet/data.js';
 import { getAllProgress, awardBadge, markBadgeSeen } from './storage.js';
 import { playCelebrationSound } from './audio.js';
 import { spawnBigCelebration } from './confetti.js';
+import { showLeo, hideLeo } from './mascot.js';
 
 /* ============================================
    Badge Definitions (44 total)
@@ -131,6 +132,7 @@ export function showBadgeOverlay(badgeIds, navigate) {
             // All shown — clean up
             badgeIds.forEach(id => markBadgeSeen(id));
             document.getElementById('badge-overlay')?.remove();
+            hideLeo();
             return;
         }
 
@@ -138,10 +140,11 @@ export function showBadgeOverlay(badgeIds, navigate) {
         const def = BADGE_BY_ID[id];
         if (!def) { current++; showNext(); return; }
 
-        // Confetti + sound only on first badge
+        // Confetti + sound + Leo only on first badge
         if (current === 0) {
             playCelebrationSound();
             spawnBigCelebration();
+            showLeo('badge_earned', {}, { duration: 3500, position: 'bottom-right' });
         }
 
         const more = badgeIds.length - current - 1;

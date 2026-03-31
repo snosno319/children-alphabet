@@ -70,6 +70,10 @@ export function renderHome(app, navigate) {
           <span class="home-nav-icon">🧩</span>
           <span class="home-nav-label">Quiz</span>
         </button>
+        <button class="home-nav-btn song-btn" data-screen="song">
+          <span class="home-nav-icon">🎵</span>
+          <span class="home-nav-label">Song</span>
+        </button>
       </div>
     </div>
   `;
@@ -218,15 +222,17 @@ export function injectHomeStyles() {
       font-size: 1.5rem;
     }
 
-    /* Navigation cards */
+    /* Navigation cards — 2×2 grid for 4 buttons */
     .home-nav {
-      display: flex;
-      gap: var(--space-lg);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
       z-index: 1;
-      justify-content: center;
+      width: 100%;
+      max-width: 280px;
     }
     .home-nav-btn {
-      width: 110px;
+      width: 100%;
       padding: var(--space-lg) var(--space-sm) var(--space-md);
       border-radius: var(--radius-xl);
       display: flex;
@@ -250,6 +256,9 @@ export function injectHomeStyles() {
     }
     .quiz-btn {
       background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+    }
+    .song-btn {
+      background: linear-gradient(135deg, #FFB300 0%, #FF8A65 100%);
     }
     .home-nav-icon {
       font-size: 3.5rem;
@@ -276,8 +285,8 @@ export function injectHomeStyles() {
 
     /* Portrait */
     @media (max-aspect-ratio: 1/1) {
-      .home-nav { gap: var(--space-md); }
-      .home-nav-btn { width: 105px; }
+      .home-nav { gap: var(--space-md); max-width: 240px; }
+      .home-nav-btn { width: 100%; }
       .home-nav-icon { font-size: 2.8rem; }
       .home-logo-letter { font-size: var(--text-4xl); }
     }

@@ -9,6 +9,7 @@ import {
     getPhonicsStats, getRhymeStats, getEarnedBadges,
 } from '../shared/storage.js';
 import { checkAndAwardBadges } from '../shared/badges.js';
+import { showLeo, hideLeo } from '../shared/mascot.js';
 import { playPopSound, speakInstruction } from '../shared/audio.js';
 import { startJourney, getJourneyState } from '../shared/journey.js';
 
@@ -156,6 +157,9 @@ export function renderHub(app, navigate) {
     // Auto-speak welcome
     setTimeout(() => speakInstruction('welcome'), 800);
 
+    // Leo mascot — appears after welcome settles
+    setTimeout(() => showLeo('hub', { streak, totalStars }), 1400);
+
     // Journey
     document.getElementById('hub-journey').addEventListener('click', () => {
         playPopSound();
@@ -167,12 +171,14 @@ export function renderHub(app, navigate) {
     // Badges
     document.getElementById('hub-badges').addEventListener('click', () => {
         playPopSound();
+        hideLeo();
         navigate('badges');
     });
 
     // Parents
     document.getElementById('hub-parents').addEventListener('click', () => {
         playPopSound();
+        hideLeo();
         window.speechSynthesis?.cancel();
         navigate('parents');
     });
@@ -184,6 +190,7 @@ export function renderHub(app, navigate) {
     app.querySelectorAll('.hub-card').forEach(card => {
         card.addEventListener('click', () => {
             playPopSound();
+            hideLeo();
             card.style.transform = 'scale(0.88)';
             setTimeout(() => {
                 window.speechSynthesis?.cancel();

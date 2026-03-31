@@ -21,6 +21,7 @@ import { renderHome as renderAlphabetHome, injectHomeStyles as injectAlphabetHom
 import { renderExplore, injectExploreStyles } from './alphabet/explore.js';
 import { renderTrace, injectTraceStyles } from './alphabet/trace.js';
 import { renderQuiz as renderAlphabetQuiz, injectQuizStyles as injectAlphabetQuizStyles } from './alphabet/quiz.js';
+import { renderSong, injectSongStyles } from './alphabet/song.js';
 
 // CVC Words
 import { renderHome as renderCvcHome, injectHomeStyles as injectCvcHomeStyles } from './cvc/home.js';
@@ -69,6 +70,7 @@ const SCREENS = {
     'explore': { render: renderExplore, styles: injectExploreStyles },
     'trace': { render: renderTrace, styles: injectTraceStyles },
     'quiz': { render: renderAlphabetQuiz, styles: injectAlphabetQuizStyles },
+    'song': { render: renderSong, styles: injectSongStyles },
 
     // CVC Words
     'cvc-home': { render: renderCvcHome, styles: injectCvcHomeStyles },
