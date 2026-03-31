@@ -13,6 +13,9 @@ import { renderProfileScreen, injectProfileStyles } from './screens/profile.js';
 // Parents
 import { renderParents, injectParentsStyles } from './screens/parents.js';
 
+// Badges
+import { renderBadges, injectBadgesStyles } from './screens/badges.js';
+
 // Alphabet
 import { renderHome as renderAlphabetHome, injectHomeStyles as injectAlphabetHomeStyles } from './alphabet/home.js';
 import { renderExplore, injectExploreStyles } from './alphabet/explore.js';
@@ -59,6 +62,7 @@ const SCREENS = {
     'hub': { render: renderHub, styles: injectHubStyles },
     'profile': { render: renderProfileScreen, styles: injectProfileStyles },
     'parents': { render: renderParents, styles: injectParentsStyles },
+    'badges': { render: renderBadges, styles: injectBadgesStyles },
 
     // Alphabet
     'alphabet-home': { render: renderAlphabetHome, styles: injectAlphabetHomeStyles },

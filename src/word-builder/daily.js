@@ -5,6 +5,7 @@
 import { getDailyWord, ALL_CONSONANTS } from './data.js';
 import { speakWord, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction, playSnapSound, speak } from '../shared/audio.js';
 import { completeDailyChallenge, isDailyCompleted, getStreak, addWordBuilderStars } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { spawnConfetti } from '../shared/confetti.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
 
@@ -83,6 +84,7 @@ export function renderDaily(app, navigate, props = {}) {
         answered = true;
         completeDailyChallenge();
         addWordBuilderStars(10);
+        checkAndAwardBadges(navigate);
         spawnConfetti();
 
         setTimeout(async () => {

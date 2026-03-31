@@ -105,6 +105,8 @@ function createDefaultProgress() {
         },
         global: {
             lastActivity: null,
+            earnedBadges: [],   // string[] — badge IDs in earn order
+            badgeSeenAt: {},    // { badgeId: timestamp } — prevents re-showing earn overlay
         },
     };
 }
@@ -515,4 +517,41 @@ export function getRhymeStats() {
         totalCorrect: (rh.rhymeMatchCorrect || 0) + (rh.rhymeSortCorrect || 0) + (rh.oddOneOutCorrect || 0),
         totalAttempts: (rh.rhymeMatchTotal || 0) + (rh.rhymeSortTotal || 0) + (rh.oddOneOutTotal || 0),
     };
+}
+
+/* ============================================
+   Badges
+   ============================================ */
+
+export function getEarnedBadges() {
+    return getProgress().global.earnedBadges || [];
+}
+
+export function hasBadge(id) {
+    return (getProgress().global.earnedBadges || []).includes(id);
+}
+
+/** Award a badge. Returns true if newly awarded (false if already had it). */
+export function awardBadge(id) {
+    const p = getProgress();
+    if (!p.global.earnedBadges) p.global.earnedBadges = [];
+    if (p.global.earnedBadges.includes(id)) return false;
+    p.global.earnedBadges.push(id);
+    saveProgress(p);
+    return true;
+}
+
+export function markBadgeSeen(id) {
+    const p = getProgress();
+    if (!p.global.badgeSeenAt) p.global.badgeSeenAt = {};
+    p.global.badgeSeenAt[id] = Date.now();
+    saveProgress(p);
+}
+
+/** Returns badge IDs earned but not yet shown in the overlay. */
+export function getUnseenBadges() {
+    const p = getProgress();
+    const earned = p.global.earnedBadges || [];
+    const seen = p.global.badgeSeenAt || {};
+    return earned.filter(id => !seen[id]);
 }

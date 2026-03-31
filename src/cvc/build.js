@@ -6,6 +6,7 @@
 import { getAllWords, ALL_CONSONANTS } from './data.js';
 import { speakWord, speakBlendCVC, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction, playSnapSound, speak } from '../shared/audio.js';
 import { markWordBuilt, addCvcStars, recordCvcAccuracy } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 import { spawnConfetti } from '../shared/confetti.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
 
@@ -143,6 +144,7 @@ function handleLetterTap(btn, word) {
       answered = true;
       markWordBuilt(word.word);
       addCvcStars(3);
+      checkAndAwardBadges(localNavigate);
 
       const scoreEl = document.getElementById('build-score');
       scoreEl.textContent = `⭐ ${(roundIndex + 1) * 3}`;

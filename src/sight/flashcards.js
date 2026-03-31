@@ -5,6 +5,7 @@
 import { SIGHT_WORDS } from './data.js';
 import { speakWordWithSentence, speakWord, playPopSound, speakInstruction, playSwipeSound, playTinkle } from '../shared/audio.js';
 import { markWordLearned, addSightStars, getSightLearnedWords } from '../shared/storage.js';
+import { checkAndAwardBadges } from '../shared/badges.js';
 
 let cardIndex = 0;
 let sessionWords = [];
@@ -95,6 +96,7 @@ function showCard() {
     if (!getSightLearnedWords().includes(word.word)) {
       markWordLearned(word.word);
       addSightStars(2);
+      checkAndAwardBadges(navigate);
       playTinkle();
       const star = document.getElementById('fc-star');
       star.textContent = '⭐';
