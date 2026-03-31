@@ -382,17 +382,6 @@ export function recordWordBuilderAccuracy(word, isCorrect) {
     saveProgress(p);
 }
 
-export function markDailyCompleted(dateStr) {
-    const p = getProgress();
-    if (!p.wordBuilder.dailyCompleted.includes(dateStr)) {
-        p.wordBuilder.dailyCompleted.push(dateStr);
-        p.wordBuilder.streak++;
-        p.wordBuilder.lastDaily = dateStr;
-    }
-    p.global.lastActivity = Date.now();
-    saveProgress(p);
-}
-
 export function isDailyCompleted() {
     const p = getProgress();
     const today = getTodayString();
@@ -560,10 +549,6 @@ export function getEarnedBadges() {
     return getProgress().global.earnedBadges || [];
 }
 
-export function hasBadge(id) {
-    return (getProgress().global.earnedBadges || []).includes(id);
-}
-
 /** Award a badge. Returns true if newly awarded (false if already had it). */
 export function awardBadge(id) {
     const p = getProgress();
@@ -579,14 +564,6 @@ export function markBadgeSeen(id) {
     if (!p.global.badgeSeenAt) p.global.badgeSeenAt = {};
     p.global.badgeSeenAt[id] = Date.now();
     saveProgress(p);
-}
-
-/** Returns badge IDs earned but not yet shown in the overlay. */
-export function getUnseenBadges() {
-    const p = getProgress();
-    const earned = p.global.earnedBadges || [];
-    const seen = p.global.badgeSeenAt || {};
-    return earned.filter(id => !seen[id]);
 }
 
 /* ============================================

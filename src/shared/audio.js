@@ -110,8 +110,10 @@ export function playAudio(path, fallbackText = '') {
    TTS fallback (Disabled to enforce pre-generated high-quality audio)
    ============================================ */
 
-function speakTTS(text, options = {}) {
-    console.warn('speakTTS fallback disabled. Pre-generate this string:', text);
+// eslint-disable-next-line no-unused-vars
+function speakTTS(_text, _options = {}) {
+    // TTS fallback intentionally disabled — all strings are covered by pre-generated WAV files.
+    // Re-enable and regenerate public/audio/ if new strings are added.
     return Promise.resolve();
 }
 

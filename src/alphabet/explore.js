@@ -9,7 +9,6 @@ import { checkAndAwardBadges } from '../shared/badges.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
 
 let currentIndex = 0;
-let selectedIndex = -1;
 let exploredThisSession = new Set();
 let localNavigate = null;
 
@@ -190,7 +189,6 @@ function animatePress(elementOrId) {
 }
 
 async function showDetail(index) {
-  selectedIndex = index;
   const l = LETTERS[index];
 
   // Visuals
@@ -266,7 +264,6 @@ function hideDetail() {
     return exitJourney();
   }
   document.getElementById('detail-overlay').style.display = 'none';
-  selectedIndex = -1;
 }
 
 export function injectExploreStyles() {

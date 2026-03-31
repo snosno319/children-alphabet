@@ -8,15 +8,16 @@ Voice-guided alphabet and literacy learning app for ages 4-6. Built with Vanilla
 - Capacitor 8.1.0 for iOS/Android native builds
 - Kokoro TTS (kokoro-js) — used to pre-generate audio; 348 WAV files bundled in `public/audio/`
 - canvas-confetti 1.9.4 — physics-based celebration effects
-- Vitest 4.1.2 + jsdom 29.0.1 for testing (205 tests, all passing)
+- Vitest 4.1.2 + jsdom 29.0.1 for testing (287 tests, all passing)
 
-## App Structure — 6 Sub-Apps
-1. **ABCs** (`src/alphabet/`) — letter exploration, tracing (with color picker), quizzes
+## App Structure — 7 Sub-Apps
+1. **ABCs** (`src/alphabet/`) — letter exploration, tracing (with color picker), quizzes, ABC song, memory flip cards, uppercase↔lowercase sort
 2. **Words** (`src/cvc/`) — CVC word families and blending
-3. **Reading** (`src/sight/`) — sight word flashcards, matching, stories
+3. **Reading** (`src/sight/`) — sight word flashcards, matching, stories (12 stories, auto-read with word highlighting)
 4. **Spelling** (`src/word-builder/`) — spelling, picture matching, blending, daily challenges
 5. **Phonics Lab** (`src/phonics/`) — sound matching and identification
 6. **Rhyme Time** (`src/rhyme/`) — rhyming word games
+7. **Numbers** (`src/numbers/`) — 1–10 explore and quiz
 
 ## Other Features
 - Multi-profile system (siblings with separate progress)
@@ -27,13 +28,13 @@ Voice-guided alphabet and literacy learning app for ages 4-6. Built with Vanilla
 - Visual feedback — `src/shared/feedback.js`: `floatStars()`, `ripplePress()`, `shakeEl()`, `bounceEl()`
 
 ## Current State
-**Build: PASSING. All 6 modules fully implemented. 205 tests passing.**
+**Build: PASSING. All 7 modules fully implemented. 287 tests passing.**
 
 ### Branch
 Active development branch: `main` (all feature work merged)
 
 ### Known Issues (pre-launch)
-- **TTS fallback disabled** — `src/shared/audio.js` `speakTTS()` intentionally returns early; the 348 bundled WAV files cover all strings. Only an issue if new strings are added.
+- **TTS fallback disabled** — `src/shared/audio.js` `speakTTS()` is a silent no-op; the 348 bundled WAV files cover all strings. Re-enable and regenerate `public/audio/` if new strings are added.
 - **Audio generation script broken** — `scripts/generate-audio.mjs` has `TypeError: EdgeTTS is not a constructor`; not needed at runtime, only needed if new audio strings are added.
 
 ## Architecture Notes
@@ -54,7 +55,7 @@ Active development branch: `main` (all feature work merged)
 ### Storage
 - Single localStorage key per profile: `english-adventure-progress-{profileId}`
 - `src/shared/storage.js` — all progress functions; `createDefaultProgress()` is the canonical schema
-- Use `completeDailyChallenge()` (not `markDailyCompleted(dateStr)`) for the daily streak flow
+- Use `completeDailyChallenge()` for the daily streak flow
 - **Planned addition**: `global.streak` + `global.lastStreakDate` for app-wide streak (see SPECS.md)
 - **Planned addition**: `global.earnedBadges[]` for badge/sticker collection (see SPECS.md)
 
@@ -158,13 +159,11 @@ global: {
 }
 ```
 
-New functions to add in `src/shared/storage.js`:
+Badge functions in `src/shared/storage.js`:
 ```js
-export function getEarnedBadges()           // returns string[]
-export function hasBadge(id)                // returns boolean
-export function awardBadge(id)              // adds to earnedBadges if not present; returns true if newly awarded
-export function markBadgeSeen(id)           // records in badgeSeenAt
-export function getUnseenBadges()           // badges earned but not yet shown in overlay
+export function getEarnedBadges()  // returns string[]
+export function awardBadge(id)     // adds to earnedBadges if not present; returns true if newly awarded
+export function markBadgeSeen(id)  // records in badgeSeenAt
 ```
 
 ### New File: `src/shared/badges.js`

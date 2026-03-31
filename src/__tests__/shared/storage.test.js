@@ -43,7 +43,6 @@ import {
     markWordMatched,
     markWordBlended,
     recordWordBuilderAccuracy,
-    markDailyCompleted,
     completeDailyChallenge,
     isDailyCompleted,
     getStreak,
@@ -478,9 +477,7 @@ describe('completeDailyChallenge()', () => {
             d.setDate(d.getDate() - 1);
             return d.toISOString().slice(0, 10);
         })();
-        // Manually set lastDaily to yesterday
-        markDailyCompleted(yesterday);
-        // Force streak to 1 as if user completed yesterday
+        // Set up state as if user completed yesterday
         const p = getAllProgress();
         p.wordBuilder.streak = 1;
         p.wordBuilder.lastDaily = yesterday;
