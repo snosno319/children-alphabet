@@ -19,6 +19,7 @@ import {
     getCvcCompletionPercent,
     getSightCompletionPercent,
     getWordBuilderCompletionPercent,
+    getNumbersCompletionPercent,
     getPhonicsStats,
     getRhymeStats,
     resetProgress,
@@ -124,6 +125,7 @@ function renderDashboardContent(container) {
     const compCvc     = getCvcCompletionPercent();
     const compSight   = getSightCompletionPercent();
     const compWb      = getWordBuilderCompletionPercent();
+    const compNumbers = getNumbersCompletionPercent();
 
     // Mastered / struggling metrics for tracked sub-apps
     const alphaMetrics = buildMetrics(p.alphabet?.letterScores || {});
@@ -172,12 +174,13 @@ function renderDashboardContent(container) {
         <div class="dash-section">
             <h3 class="dash-section-title">Completion by Module</h3>
             <div class="dash-completion-grid">
-                ${completionRow('🔤 ABCs',     compAlpha, alphabetAcc)}
-                ${completionRow('🧩 Words',    compCvc,   cvcAcc)}
-                ${completionRow('⭐ Reading',  compSight, sightAcc)}
-                ${completionRow('✏️ Spelling', compWb,    wbAcc)}
-                ${completionRow('🔊 Phonics',  null,      phAcc)}
-                ${completionRow('🎵 Rhyme',    null,      rhAcc)}
+                ${completionRow('🔤 ABCs',     compAlpha,   alphabetAcc)}
+                ${completionRow('🧩 Words',    compCvc,     cvcAcc)}
+                ${completionRow('⭐ Reading',  compSight,   sightAcc)}
+                ${completionRow('✏️ Spelling', compWb,      wbAcc)}
+                ${completionRow('🔊 Phonics',  null,        phAcc)}
+                ${completionRow('🎵 Rhyme',    null,        rhAcc)}
+                ${completionRow('🔢 Numbers',  compNumbers, null)}
             </div>
         </div>
 

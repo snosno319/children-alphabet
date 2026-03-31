@@ -154,6 +154,7 @@ function startGame(app, navigate, difficulty) {
 }
 
 function showResults(app, navigate, difficulty, moves) {
+    if (app.querySelector('.memory-results-overlay')) return; // guard against double-tap
     playCelebrationSound();
     spawnBigCelebration();
     checkAndAwardBadges(navigate);

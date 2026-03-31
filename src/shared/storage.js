@@ -32,10 +32,27 @@ function getStorageKey() {
     return `english-adventure-progress-${activeProfileId}`;
 }
 
+/** Ensure stored progress has all fields from the current schema (handles profile migration). */
+function migrateProgress(stored) {
+    const defaults = createDefaultProgress();
+    for (const section of Object.keys(defaults)) {
+        if (!stored[section]) {
+            stored[section] = defaults[section];
+        } else {
+            for (const field of Object.keys(defaults[section])) {
+                if (stored[section][field] === undefined) {
+                    stored[section][field] = defaults[section][field];
+                }
+            }
+        }
+    }
+    return stored;
+}
+
 function getProgress() {
     try {
         const data = localStorage.getItem(getStorageKey());
-        if (data) return JSON.parse(data);
+        if (data) return migrateProgress(JSON.parse(data));
     } catch (e) {
         console.warn('[storage] Failed to parse progress data; resetting to defaults.', e);
     }
@@ -132,7 +149,8 @@ export function getTotalStars() {
         + (p.sight.stars || 0)
         + (p.wordBuilder.stars || 0)
         + (p.phonics.stars || 0)
-        + (p.rhyme.stars || 0);
+        + (p.rhyme.stars || 0)
+        + (p.numbers?.stars || 0);
 }
 
 export function getSubAppStars(subApp) {

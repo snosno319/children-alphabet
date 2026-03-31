@@ -42,7 +42,7 @@ export const BADGE_DEFS = [
     { id: 'streak_3',    label: '3-Day Streak',   emoji: '🔥',  color: '#FF6B6B', description: 'Complete 3 daily challenges in a row',    category: 'milestone' },
     { id: 'streak_7',    label: 'Week Streak',    emoji: '🔥',  color: '#FF3B30', description: 'Complete 7 daily challenges in a row',    category: 'milestone' },
     { id: 'daily_5',     label: 'Daily Pro',      emoji: '📅',  color: '#34D399', description: 'Complete 5 daily challenges total',       category: 'milestone' },
-    { id: 'all_stories', label: 'Story Reader',   emoji: '📚',  color: '#64B5F6', description: 'Read all 8 stories',                      category: 'milestone' },
+    { id: 'all_stories', label: 'Story Reader',   emoji: '📚',  color: '#64B5F6', description: 'Read all 12 stories',                     category: 'milestone' },
     { id: 'rhyme_master',label: 'Rhyme Master',   emoji: '🎶',  color: '#F472B6', description: 'Try all 3 Rhyme Time games',              category: 'milestone' },
 ];
 
@@ -104,7 +104,7 @@ export function checkAndAwardBadges(navigate, ctx = {}) {
     check('streak_3',    (wb.streak || 0) >= 3);
     check('streak_7',    (wb.streak || 0) >= 7);
     check('daily_5',     (wb.dailyCompleted?.length || 0) >= 5);
-    check('all_stories', (sight.storiesRead?.length || 0) >= 8);
+    check('all_stories', (sight.storiesRead?.length || 0) >= 12);
     check('rhyme_master',
         rh.rhymeMatchTotal > 0 && rh.rhymeSortTotal > 0 && rh.oddOneOutTotal > 0);
 

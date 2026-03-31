@@ -59,10 +59,8 @@ const SUB_APPS = [
         label: 'Phonics',
         getCompletion: () => {
             const s = getPhonicsStats();
-            const total = s.soundMatch.correct + s.soundMatch.wrong + s.soundSort.correct + s.soundSort.wrong + s.endSound.correct + s.endSound.wrong;
-            if (!total) return 0;
-            const correct = s.soundMatch.correct + s.soundSort.correct + s.endSound.correct;
-            return Math.round((correct / total) * 100);
+            if (!s.totalAttempts) return 0;
+            return Math.round((s.totalCorrect / s.totalAttempts) * 100);
         },
     },
     {
@@ -74,10 +72,8 @@ const SUB_APPS = [
         label: 'Rhymes',
         getCompletion: () => {
             const s = getRhymeStats();
-            const total = s.rhymeMatch.correct + s.rhymeMatch.wrong + s.rhymeSort.correct + s.rhymeSort.wrong + s.oddOneOut.correct + s.oddOneOut.wrong;
-            if (!total) return 0;
-            const correct = s.rhymeMatch.correct + s.rhymeSort.correct + s.oddOneOut.correct;
-            return Math.round((correct / total) * 100);
+            if (!s.totalAttempts) return 0;
+            return Math.round((s.totalCorrect / s.totalAttempts) * 100);
         },
     },
     {
