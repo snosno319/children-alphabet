@@ -5,28 +5,7 @@ import { NUMBERS } from './data.js';
 import { playPopSound, playCorrectSound } from '../shared/audio.js';
 import { floatStars } from '../shared/feedback.js';
 import { checkAndAwardBadges } from '../shared/badges.js';
-
-// ── Storage helper ─────────────────────────────────────────────────────────────
-function markExplored(number) {
-    const key = `english-adventure-progress-${localStorage.getItem('active_profile') || 'default'}`;
-    try {
-        const data = JSON.parse(localStorage.getItem(key) || '{}');
-        if (!data.numbers) data.numbers = { exploredNumbers: [], quizCorrect: 0, quizTotal: 0, stars: 0 };
-        if (!data.numbers.exploredNumbers) data.numbers.exploredNumbers = [];
-        if (!data.numbers.exploredNumbers.includes(number)) {
-            data.numbers.exploredNumbers.push(number);
-            localStorage.setItem(key, JSON.stringify(data));
-        }
-    } catch (e) { /* ignore */ }
-}
-
-function isExplored(number) {
-    const key = `english-adventure-progress-${localStorage.getItem('active_profile') || 'default'}`;
-    try {
-        const data = JSON.parse(localStorage.getItem(key) || '{}');
-        return (data.numbers?.exploredNumbers || []).includes(number);
-    } catch (e) { return false; }
-}
+import { markNumberExplored, isNumberExplored } from '../shared/storage.js';
 
 // ── Render ─────────────────────────────────────────────────────────────────────
 
@@ -37,7 +16,7 @@ export function renderExplore(app, navigate) {
 
     function renderCard() {
         const n = NUMBERS[currentIdx];
-        const explored = isExplored(n.number);
+        const explored = isNumberExplored(n.number);
         const emojiRow = Array.from({ length: n.number }, () => n.emoji).join(' ');
 
         app.innerHTML = `
@@ -69,7 +48,7 @@ export function renderExplore(app, navigate) {
 
         // Mark explored on render
         if (!explored) {
-            markExplored(n.number);
+            markNumberExplored(n.number);
         }
 
         document.getElementById('ne-back').addEventListener('click', () => {

@@ -4,35 +4,11 @@
  * Easy: 4 pairs (A–D), Hard: 8 pairs (A–H)
  */
 import { LETTERS } from './data.js';
-import { playAudio } from '../shared/audio.js';
-import { playCorrectSound, playWrongSound, playCelebrationSound } from '../shared/audio.js';
+import { playAudio, playCorrectSound, playWrongSound, playCelebrationSound } from '../shared/audio.js';
 import { floatStars, shakeEl } from '../shared/feedback.js';
 import { spawnBigCelebration, spawnStarBurst } from '../shared/confetti.js';
 import { checkAndAwardBadges } from '../shared/badges.js';
-
-// ── Storage helpers ────────────────────────────────────────────────────────────
-
-function saveMemoryBest(difficulty, moves) {
-    const key = `english-adventure-progress-${localStorage.getItem('active_profile') || 'default'}`;
-    try {
-        const data = JSON.parse(localStorage.getItem(key) || '{}');
-        if (!data.alphabet) data.alphabet = {};
-        const field = difficulty === 'easy' ? 'memoryBestEasy' : 'memoryBestHard';
-        if (data.alphabet[field] === null || data.alphabet[field] === undefined || moves < data.alphabet[field]) {
-            data.alphabet[field] = moves;
-            localStorage.setItem(key, JSON.stringify(data));
-        }
-    } catch (e) { /* ignore */ }
-}
-
-function getMemoryBest(difficulty) {
-    const key = `english-adventure-progress-${localStorage.getItem('active_profile') || 'default'}`;
-    try {
-        const data = JSON.parse(localStorage.getItem(key) || '{}');
-        const field = difficulty === 'easy' ? 'memoryBestEasy' : 'memoryBestHard';
-        return data.alphabet?.[field] ?? null;
-    } catch (e) { return null; }
-}
+import { saveMemoryBest, getMemoryBest } from '../shared/storage.js';
 
 // ── Game Logic ─────────────────────────────────────────────────────────────────
 

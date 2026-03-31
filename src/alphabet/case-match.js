@@ -4,29 +4,13 @@
  * 10 questions, no repeats per session.
  */
 import { LETTERS } from './data.js';
-import { playCorrectSound, playWrongSound, playCelebrationSound } from '../shared/audio.js';
-import { speakInstruction } from '../shared/audio.js';
+import { playCorrectSound, playWrongSound, playCelebrationSound, speakInstruction } from '../shared/audio.js';
 import { floatStars, shakeEl } from '../shared/feedback.js';
 import { spawnBigCelebration } from '../shared/confetti.js';
 import { checkAndAwardBadges } from '../shared/badges.js';
+import { recordCaseMatchResult } from '../shared/storage.js';
 
 const TOTAL_QUESTIONS = 10;
-
-// ── Storage helper ─────────────────────────────────────────────────────────────
-function saveResult(correct, total) {
-    const profileId = localStorage.getItem('active_profile') || 'default';
-    const key = `english-adventure-progress-${profileId}`;
-    try {
-        const data = JSON.parse(localStorage.getItem(key) || '{}');
-        if (!data.alphabet) data.alphabet = {};
-        data.alphabet.caseMatchCorrect = (data.alphabet.caseMatchCorrect || 0) + correct;
-        data.alphabet.caseMatchTotal   = (data.alphabet.caseMatchTotal   || 0) + total;
-        const starsEarned = correct >= 10 ? 3 : correct >= 6 ? 2 : correct >= 3 ? 1 : 0;
-        data.alphabet.stars = (data.alphabet.stars || 0) + starsEarned;
-        localStorage.setItem(key, JSON.stringify(data));
-        return starsEarned;
-    } catch (e) { return 0; }
-}
 
 // ── Render ─────────────────────────────────────────────────────────────────────
 
@@ -107,7 +91,7 @@ export function renderCaseMatch(app, navigate) {
     function showResults() {
         playCelebrationSound();
         spawnBigCelebration();
-        const starsEarned = saveResult(score, TOTAL_QUESTIONS);
+        const starsEarned = recordCaseMatchResult(score, TOTAL_QUESTIONS);
         checkAndAwardBadges(navigate, { quizAce: score === TOTAL_QUESTIONS });
 
         app.innerHTML = `

@@ -3,29 +3,13 @@
  * Shows N emojis, child taps the correct numeral from 3 choices.
  */
 import { NUMBERS } from './data.js';
-import { playCorrectSound, playWrongSound, playCelebrationSound } from '../shared/audio.js';
-import { speakInstruction } from '../shared/audio.js';
+import { playCorrectSound, playWrongSound, playCelebrationSound, speakInstruction } from '../shared/audio.js';
 import { floatStars, shakeEl } from '../shared/feedback.js';
 import { spawnBigCelebration } from '../shared/confetti.js';
 import { checkAndAwardBadges } from '../shared/badges.js';
+import { recordNumbersQuizResult } from '../shared/storage.js';
 
 const TOTAL_QUESTIONS = 5;
-
-// ── Storage helper ─────────────────────────────────────────────────────────────
-function saveQuizResult(correct, total) {
-    const key = `english-adventure-progress-${localStorage.getItem('active_profile') || 'default'}`;
-    try {
-        const data = JSON.parse(localStorage.getItem(key) || '{}');
-        if (!data.numbers) data.numbers = { exploredNumbers: [], quizCorrect: 0, quizTotal: 0, stars: 0 };
-        data.numbers.quizCorrect = (data.numbers.quizCorrect || 0) + correct;
-        data.numbers.quizTotal   = (data.numbers.quizTotal   || 0) + total;
-        // Award stars: 3 correct=1, 4 correct=2, 5 correct=3
-        const starsEarned = correct >= 5 ? 3 : correct >= 4 ? 2 : correct >= 3 ? 1 : 0;
-        data.numbers.stars = (data.numbers.stars || 0) + starsEarned;
-        localStorage.setItem(key, JSON.stringify(data));
-        return starsEarned;
-    } catch (e) { return 0; }
-}
 
 // ── Quiz Logic ─────────────────────────────────────────────────────────────────
 
@@ -107,7 +91,7 @@ export function renderQuiz(app, navigate) {
     function showResults() {
         playCelebrationSound();
         spawnBigCelebration();
-        const starsEarned = saveQuizResult(score, TOTAL_QUESTIONS);
+        const starsEarned = recordNumbersQuizResult(score, TOTAL_QUESTIONS);
         checkAndAwardBadges(navigate);
 
         app.innerHTML = `

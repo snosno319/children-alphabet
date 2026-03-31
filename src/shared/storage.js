@@ -570,3 +570,69 @@ export function getUnseenBadges() {
     const seen = p.global.badgeSeenAt || {};
     return earned.filter(id => !seen[id]);
 }
+
+/* ============================================
+   Numbers
+   ============================================ */
+
+export function markNumberExplored(number) {
+    const p = getProgress();
+    if (!p.numbers.exploredNumbers.includes(number)) {
+        p.numbers.exploredNumbers.push(number);
+    }
+    p.global.lastActivity = Date.now();
+    saveProgress(p);
+}
+
+export function isNumberExplored(number) {
+    return getProgress().numbers.exploredNumbers.includes(number);
+}
+
+export function recordNumbersQuizResult(correct, total) {
+    const p = getProgress();
+    p.numbers.quizCorrect += correct;
+    p.numbers.quizTotal   += total;
+    const starsEarned = correct >= total ? 3 : correct >= total - 1 ? 2 : correct >= Math.ceil(total * 0.6) ? 1 : 0;
+    p.numbers.stars += starsEarned;
+    p.global.lastActivity = Date.now();
+    saveProgress(p);
+    return starsEarned;
+}
+
+export function getNumbersProgress() {
+    return getProgress().numbers;
+}
+
+/* ============================================
+   Alphabet — Memory game
+   ============================================ */
+
+export function saveMemoryBest(difficulty, moves) {
+    const p = getProgress();
+    const field = difficulty === 'easy' ? 'memoryBestEasy' : 'memoryBestHard';
+    if (p.alphabet[field] === null || p.alphabet[field] === undefined || moves < p.alphabet[field]) {
+        p.alphabet[field] = moves;
+        p.global.lastActivity = Date.now();
+        saveProgress(p);
+    }
+}
+
+export function getMemoryBest(difficulty) {
+    const field = difficulty === 'easy' ? 'memoryBestEasy' : 'memoryBestHard';
+    return getProgress().alphabet[field] ?? null;
+}
+
+/* ============================================
+   Alphabet — Case Match quiz
+   ============================================ */
+
+export function recordCaseMatchResult(correct, total) {
+    const p = getProgress();
+    p.alphabet.caseMatchCorrect += correct;
+    p.alphabet.caseMatchTotal   += total;
+    const starsEarned = correct >= total ? 3 : correct >= Math.ceil(total * 0.6) ? 2 : correct >= Math.ceil(total * 0.3) ? 1 : 0;
+    p.alphabet.stars += starsEarned;
+    p.global.lastActivity = Date.now();
+    saveProgress(p);
+    return starsEarned;
+}
