@@ -9,13 +9,15 @@ import { checkAndAwardBadges } from '../shared/badges.js';
 
 let cardIndex = 0;
 let sessionWords = [];
+let localNavigate = null;
 
 export function renderFlashcards(app, navigate) {
+  localNavigate = navigate;
   cardIndex = 0;
-  // Prioritize unlearned words, then mix in learned ones
-  const learned = getSightLearnedWords();
-  const unlearned = SIGHT_WORDS.filter(w => !learned.includes(w.word));
-  const learnedWords = SIGHT_WORDS.filter(w => learned.includes(w.word));
+  // Prioritize unlearned words; use a Set for O(1) lookups
+  const learnedSet = new Set(getSightLearnedWords());
+  const unlearned = SIGHT_WORDS.filter(w => !learnedSet.has(w.word));
+  const learnedWords = SIGHT_WORDS.filter(w => learnedSet.has(w.word));
   const sorted = [...unlearned.sort(() => Math.random() - 0.5), ...learnedWords.sort(() => Math.random() - 0.5)];
   sessionWords = sorted.slice(0, 10);
 
@@ -96,7 +98,7 @@ function showCard() {
     if (!getSightLearnedWords().includes(word.word)) {
       markWordLearned(word.word);
       addSightStars(2);
-      checkAndAwardBadges(navigate);
+      checkAndAwardBadges(localNavigate);
       playTinkle();
       const star = document.getElementById('fc-star');
       star.textContent = '⭐';

@@ -56,11 +56,11 @@ export function renderExplore(app, navigate) {
             navigate('numbers-home');
         });
 
-        document.getElementById('ne-hear').addEventListener('click', () => {
+        const hearBtn = document.getElementById('ne-hear');
+        hearBtn.addEventListener('click', () => {
             playPopSound();
             speakNumber(n.word);
-            const btn = document.getElementById('ne-hear');
-            if (btn) { floatStars(btn); }
+            floatStars(hearBtn);
         });
 
         document.getElementById('ne-prev')?.addEventListener('click', () => {

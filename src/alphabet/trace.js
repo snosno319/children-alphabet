@@ -7,7 +7,7 @@ import { LETTERS } from './data.js';
 import { speakLetter, playCorrectSound, playCelebrationSound, playPopSound, speakInstruction, speak } from '../shared/audio.js';
 import { markTraced, addAlphabetStars } from '../shared/storage.js';
 import { checkAndAwardBadges } from '../shared/badges.js';
-import { advanceJourney, exitJourney, getJourneyState } from '../shared/journey.js';
+import { advanceJourney, exitJourney } from '../shared/journey.js';
 
 let currentIndex = 0;
 let isUppercase = true; // State to track which case we are tracing

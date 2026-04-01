@@ -10,9 +10,10 @@ import { advanceJourney, exitJourney } from '../shared/journey.js';
 import { floatStars } from '../shared/feedback.js';
 import { spawnBigCelebration } from '../shared/confetti.js';
 
+const TOTAL_QUESTIONS = 10;
+
 let questionIndex = 0;
 let score = 0;
-let totalQuestions = 10;
 let questions = [];
 let answered = false;
 let wrongGuesses = 0;
@@ -30,7 +31,7 @@ export function renderQuiz(app, navigate, props = {}) {
   } else {
       journeyForcedLetter = null;
   }
-  questions = generateQuestions(totalQuestions);
+  questions = generateQuestions(TOTAL_QUESTIONS);
 
   app.innerHTML = `
     <div class="screen quiz-screen" id="quiz-view">
@@ -93,7 +94,7 @@ function showQuestion() {
   const q = questions[questionIndex];
   const content = document.getElementById('quiz-content');
   const progress = document.getElementById('quiz-progress');
-  progress.style.width = `${((questionIndex + 1) / totalQuestions) * 100}%`;
+  progress.style.width = `${((questionIndex + 1) / TOTAL_QUESTIONS) * 100}%`;
 
   if (q.type === 'recognize') {
     // Show emoji + speak the word — child picks the letter
@@ -157,48 +158,45 @@ function handleAnswer(selectedLetter) {
       recordLetterAccuracy(q.correct.letter, isCorrect);
   }
 
+  // Cache correct/selected button references once — reused in both branches
+  let correctBtn = null;
+  let selectedBtn = null;
+  buttons.forEach(btn => {
+    if (btn.dataset.letter === q.correct.letter) correctBtn = btn;
+    if (btn.dataset.letter === selectedLetter) selectedBtn = btn;
+  });
+
   if (isCorrect) {
-    buttons.forEach(btn => {
-      if (btn.dataset.letter === q.correct.letter) {
-        btn.classList.add('correct');
-        btn.classList.remove('hint-glow');
-      }
-      btn.style.pointerEvents = 'none';
-    });
+    if (correctBtn) { correctBtn.classList.add('correct'); correctBtn.classList.remove('hint-glow'); }
+    buttons.forEach(btn => { btn.style.pointerEvents = 'none'; });
 
     score++;
     addAlphabetStars(3);
     playCorrectSound();
-    // Voice + emoji feedback, no text
     feedback.innerHTML = '🎉';
     feedback.className = 'quiz-feedback correct-feedback';
     document.getElementById('quiz-score').textContent = `⭐ ${score}`;
     speakInstruction('quiz_correct');
-    const correctBtn = Array.from(buttons).find(b => b.dataset.letter === q.correct.letter);
     floatStars(correctBtn, 3);
   } else {
     wrongGuesses++;
-    
-    // Mark the selected one as wrong and disable it temporarily to prevent spamming
-    const selectedBtn = Array.from(buttons).find(b => b.dataset.letter === selectedLetter);
+
     if (selectedBtn) {
       selectedBtn.classList.add('wrong');
       selectedBtn.style.pointerEvents = 'none';
-      setTimeout(() => { 
+      setTimeout(() => {
         selectedBtn.classList.remove('wrong');
-        selectedBtn.style.pointerEvents = 'auto'; // allow retry later if needed
+        selectedBtn.style.pointerEvents = 'auto';
       }, 1000);
     }
-    
+
     playWrongSound();
     speakInstruction('quiz_wrong');
-    // Show correct answer as emoji — voice explains
     feedback.innerHTML = `${q.correct.emoji}`;
     feedback.className = 'quiz-feedback wrong-feedback';
-    
+
     // Constructive Feedback: After 2 wrong guesses, highlight the correct one
     if (wrongGuesses >= 2) {
-      const correctBtn = Array.from(buttons).find(b => b.dataset.letter === q.correct.letter);
       if (correctBtn) correctBtn.classList.add('hint-glow');
       setTimeout(() => {
         speak(`Look for ${q.correct.letter}!`, { rate: 0.85, pitch: 1.1 });
@@ -222,7 +220,7 @@ function showResults() {
   const progress = document.getElementById('quiz-progress');
   progress.style.width = '100%';
 
-  const percent = Math.round((score / totalQuestions) * 100);
+  const percent = Math.round((score / TOTAL_QUESTIONS) * 100);
   let emoji = '';
   if (percent >= 80) emoji = '🏆';
   else if (percent >= 60) emoji = '🌟';
@@ -268,7 +266,7 @@ function showResults() {
     if (questionIndex >= 5) { // If 5 questions are done, reset for a new set
       questionIndex = 0;
       score = 0;
-      questions = generateQuestions(totalQuestions);
+      questions = generateQuestions(TOTAL_QUESTIONS);
       document.getElementById('quiz-score').textContent = '⭐ 0';
       speakInstruction('quiz_entry');
       setTimeout(() => showQuestion(), 2500);
