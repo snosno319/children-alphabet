@@ -9,12 +9,10 @@ import { markFamilyExplored, addCvcStars } from '../shared/storage.js';
 import { advanceJourney, exitJourney } from '../shared/journey.js';
 
 let selectedFamily = null;
-let currentFamilyIndex = 0;
 let localNavigate = null;
 
 export function renderExplore(app, navigate, props = {}) {
     localNavigate = navigate;
-    currentFamilyIndex = 0;
     selectedFamily = null;
 
     app.innerHTML = `

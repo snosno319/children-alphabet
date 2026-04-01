@@ -2,7 +2,7 @@
  * Phonics Lab — Ending Sound
  * Hear a word causing identifying the LAST sound.
  */
-import { getWordsForSound, getAllEndSounds, ALL_SOUNDS, SOUND_GROUPS } from './data.js';
+import { getWordsForSound, ALL_SOUNDS, SOUND_GROUPS } from './data.js';
 import { speakWord, speakLetterFull, playCorrectSound, playWrongSound, playPopSound, playCelebrationSound, speakInstruction } from '../shared/audio.js';
 import { recordEndSound, addPhonicsStars } from '../shared/storage.js';
 import { checkAndAwardBadges } from '../shared/badges.js';

@@ -92,8 +92,8 @@ export function renderDaily(app, navigate, props = {}) {
           const feedback = document.getElementById('daily-feedback');
           feedback.innerHTML = '🎉🔥🎉';
           feedback.className = 'daily-feedback correct-fb';
-          await speak(dailyWord.word, { spellOut: true });
-          showDailyComplete(app, navigate, props.localNavigate || navigate);
+          await speak(dailyWord.word);
+          showDailyComplete(app, navigate);
         }, 300);
       }
     } else {
@@ -128,7 +128,7 @@ function showAlreadyComplete(app, navigate) {
   speakInstruction('results_great');
 }
 
-function showDailyComplete(app, navigate, localNavigate) {
+function showDailyComplete(app, navigate) {
   const streak = getStreak();
   const content = document.getElementById('daily-content');
   content.innerHTML = `
@@ -142,7 +142,7 @@ function showDailyComplete(app, navigate, localNavigate) {
   document.getElementById('daily-done-btn').addEventListener('click', () => {
     playPopSound();
     if (window.isJourneyMode) {
-        advanceJourney(localNavigate);
+        advanceJourney(navigate);
     } else {
         navigate('wordBuilder-home');
     }
