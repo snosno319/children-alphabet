@@ -105,7 +105,7 @@ function speakWithHighlight(text, onEnd) {
         const els = document.querySelectorAll('.story-word[data-char-start]');
         for (const el of els) {
             const start = parseInt(el.dataset.charStart);
-            const end = start + el.dataset.wordLen;
+            const end = start + parseInt(el.dataset.wordLen, 10);
             if (start <= e.charIndex && e.charIndex < end) {
                 el.classList.add('speaking');
                 break;
