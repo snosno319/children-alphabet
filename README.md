@@ -4,12 +4,15 @@ A voice-guided literacy learning app for ages 4–6. Children tap, trace, and li
 
 ## Features
 
-- **ABCs** — interactive letter grid: tap to hear names, sounds, examples, and fun facts
-- **CVC Words** — word families, blending, and quizzes
-- **Sight Words** — flashcards, matching games, and short stories
-- **Word Builder** — spelling, picture matching, blending lab, and a daily challenge
+- **ABCs** — interactive letter grid: tap to hear names, sounds, examples, and fun facts; tracing with 8-color palette; quizzes; ABC sing-along song; memory flip-card game; uppercase↔lowercase sort
+- **Words** — CVC word families, blending, and quizzes
+- **Reading** — sight word flashcards, matching games, and 12 short stories with word-by-word autoread highlighting
+- **Spelling** — word spelling, picture matching, blending lab, and a daily challenge
 - **Phonics Lab** — sound matching, sorting, and end-sound identification
 - **Rhyme Time** — rhyme matching, sorting, and odd-one-out games
+- **Numbers** — 1–10 exploration and quiz
+- **Badge / Sticker Book** — 44 collectible badges (A–Z letters, activity, milestone); earn overlay with confetti; virtual sticker book screen
+- **Leo the Lion** — named guide mascot; appears on hub, badge earn, journey complete
 - **Journey Mode** — adaptive daily learning path that targets weak spots
 - **Multi-profile** — separate progress for siblings
 - **Audio-first UX** — all instructions spoken aloud; no text required for child interaction
@@ -45,34 +48,37 @@ npm run preview    # preview the production build locally
 ## Testing
 
 ```bash
-npm test                # run all tests (226)
+npm test                # run all tests (287)
 npm run test:watch      # watch mode
 npm run test:coverage   # coverage report
 ```
 
-Tests use **Vitest** + **jsdom** and cover all data modules, shared utilities, and the subscription service.
+Tests use **Vitest** + **jsdom** and cover all data modules, shared utilities, storage, audio, badges, and journey logic.
 
 ## Project Structure
 
 ```
 src/
-  main.js              # router — navigate(screen, props)
+  main.js              # router — navigate(screen, props); 37 registered screens
   shared/
-    audio.js           # audio engine (file playback + TTS fallback)
-    storage.js         # localStorage progress, multi-profile
+    audio.js           # audio engine: WAV playback, Web Audio synth, speakInstruction()
+    storage.js         # localStorage progress, multi-profile, badge storage
     journey.js         # adaptive daily path
-  alphabet/            # ABCs sub-app
-  cvc/                 # CVC Words sub-app
-  sight/               # Sight Words sub-app
-  word-builder/        # Word Builder sub-app
-  phonics/             # Phonics Lab sub-app
-  rhyme/               # Rhyme Time sub-app
+    badges.js          # 44 badge definitions + checkAndAwardBadges()
+    feedback.js        # visual feedback: floatStars, ripplePress, shakeEl, bounceEl
+    confetti.js        # canvas-confetti wrappers: spawnConfetti, spawnBigCelebration
+    mascot.js          # Leo the Lion: showLeo(), hideLeo()
+  alphabet/            # ABCs sub-app (explore, trace, quiz, song, memory, case-match)
+  cvc/                 # CVC Words sub-app (explore, build, quiz)
+  sight/               # Sight Words sub-app (flashcards, match, stories)
+  word-builder/        # Word Builder sub-app (spell, match, blend, daily)
+  phonics/             # Phonics Lab sub-app (sound-match, sound-sort, end-sound)
+  rhyme/               # Rhyme Time sub-app (rhyme-match, rhyme-sort, odd-one-out)
+  numbers/             # Numbers sub-app (explore, quiz)
   hub/                 # main menu
-  screens/             # profile picker, parent dashboard
-  services/            # RevenueCat subscription
-  components/          # Paywall
+  screens/             # profile picker, parent dashboard, badges sticker book
 public/
-  audio/               # pre-generated WAV files (TTS)
+  audio/               # 348 pre-generated WAV files (TTS)
     letters/  phonics/  words/  intro/  feedback/  facts/  ui/  extras/
 scripts/
   generate-audio.mjs   # regenerate WAV files with Kokoro TTS
@@ -91,7 +97,7 @@ npm run generate-audio -- --only=words  # only regenerate one category
 npm run generate-audio -- --dry-run     # preview without writing
 ```
 
-> **Note:** `scripts/generate-audio.mjs` currently has a broken `EdgeTTS` import — fix needed before running.
+> **Note:** `scripts/generate-audio.mjs` currently has a broken `EdgeTTS` import — fix needed before running. The 348 bundled WAV files cover all current strings, so this only matters when adding new audio content.
 
 ## Before App Store Submission
 
